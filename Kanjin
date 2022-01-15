@@ -1,0 +1,554 @@
+# This file contains all classes for player, objects, and scenes.
+# All interactable items will also be created here.
+# The game engine can be found at the bottom.
+
+import time
+from random import randint
+from functions import startGame, typingPrint, typingInput
+from enum import Enum, auto
+
+
+class Player:
+    """Character Creation"""
+
+    # Default Character
+    def __init__(self, name, gender, age, race, job):
+        # Personality
+        self.name = name
+        self.gender = gender
+        self.age = age
+        self.race = race
+        self.job = job
+        # Health
+        self.currentHP = 100
+        self.maxHP = 100
+        # Levels
+        self.level = 1
+        self.exp = 0
+        self.maxEXP = 100
+        # Magic
+        self.spells_known = []
+        self.spells_ready = []
+        # Equipment
+        self.weapon = rock
+        self.armor = tornRags
+        # Defence
+        self.ac = 0
+        self.elemental_resistance = {DamageType.FIRE: False, DamageType.WATER: False, DamageType.LIGHTNING: False}
+        self.physical_resistance = {DamageType.SLASHING: False, DamageType.CRUSHING: False, DamageType.PIERCING: False}
+        # Ability Scores
+        self.stats = {"Strength": 0,
+                      "Dexterity": 0,
+                      "Constitution": 0,
+                      "Intelligence": 0,
+                      "Wisdom": 0,
+                      "Charisma": 0}
+        # Ability Modifiers
+        self.mods = {"Strength": 0,
+                     "Dexterity": 0,
+                     "Constitution": 0,
+                     "Intelligence": 0,
+                     "Wisdom": 0,
+                     "Charisma": 0}
+        # Held items
+        self.inventory = {rock: {"Count": 1,
+                                 "object": Weapon,
+                                 "equipped": True
+                                 },
+                          tornRags: {"Count": 1,
+                                     "object": Armor,
+                                     "equipped": True
+                                     },
+                          GP1: {"Count": 10,
+                                "object": Money,
+                                "equipped": False
+                                },
+                          }
+
+    # @property
+    # def dexMod(self):
+    #     return self.mods["Dexterity"]
+
+    def getModifier(self):
+        self.mods["Strength"] = -5 + self.stats["Strength"] // 2
+        self.mods["Dexterity"] = -5 + self.stats["Dexterity"] // 2
+        self.mods["Constitution"] = -5 + self.stats["Constitution"] // 2
+        self.mods["Intelligence"] = -5 + self.stats["Intelligence"] // 2
+        self.mods["Wisdom"] = -5 + self.stats["Wisdom"] // 2
+        self.mods["Charisma"] = -5 + self.stats["Charisma"] // 2
+
+    def set_stats(self):
+        if self.race == "elf":
+            self.stats["Dexterity"] += 2
+            self.stats["Intelligence"] += 2
+        elif self.race == "human":
+            self.stats["Strength"] += 2
+            self.stats["Constitution"] += 2
+        elif self.race == "dwarf":
+            self.stats["Constitution"] += 2
+            self.stats["Strength"] += 2
+        elif self.job == "warrior":
+            self.stats["Strength"] += 2
+            self.stats["Constitution"] += 1
+        elif self.job == "ranger":
+            self.stats["Dexterity"] += 2
+            self.stats["Charisma"] += 1
+        elif self.job == "mage":
+            self.stats["Intelligence"] += 2
+            self.stats["Charisma"] += 1
+
+    def current_stats(self):
+        """Prints a display of the user's current statistics."""
+        typingPrint("Your current stats are:\n", time)
+        typingPrint(f'Hit Points: {self.currentHP}/{self.maxHP}\n', time)
+        typingPrint(f'Strength: {self.stats["Strength"]}\n', time)
+        typingPrint(f'Dexterity: {self.stats["Dexterity"]}\n', time)
+        typingPrint(f'Constitution: {self.stats["Constitution"]}\n', time)
+        typingPrint(f'Intelligence: {self.stats["Intelligence"]}\n', time)
+        typingPrint(f'Charisma: {self.stats["Charisma"]}\n', time)
+
+    def current_equip(self):
+        """Prints a list of items currently equipped."""
+        typingPrint(f"You have equipped:\n {self.armor.name}\n"
+                    f"    {self.armor.description}"
+                    f"\n{self.weapon.name}\n"
+                    f"    {self.weapon.description}\n", time)
+
+    def new_char(self):
+        """Outputs final stats, armour, and inventory"""
+        # typingPrint("We will now generate random stats for your character.\n", time)
+        # typingPrint("Adjusting for your race and class bonuses.\n", time)
+        # print(' ')
+        # time.sleep(2)
+        self.dicerolls()
+        self.allocation()
+        print(' ')
+        self.getModifier()
+        self.current_stats()
+        print(' ')
+        time.sleep(2)
+        self.current_equip()
+        print(' ')
+        # current_inventory()
+        print(' ')
+
+    def rollStats(self):
+        """Rolls stats 4d6kh3"""
+        # Roll stats
+        typingPrint("Rolling for Strength...\n", time)
+        self.dice_rolls("Strength")
+        typingPrint(f'Strength: {self.stats["Strength"]}\n', time)
+        time.sleep(1)
+        typingPrint("Rolling for Dexterity...\n", time)
+        self.dice_rolls("Dexterity")
+        typingPrint(f'Dexterity: {self.stats["Dexterity"]}\n', time)
+        time.sleep(1)
+        typingPrint("Rolling for Constitution...\n", time)
+        self.dice_rolls("Constitution")
+        typingPrint(f'Constitution: {self.stats["Constitution"]}\n', time)
+        time.sleep(1)
+        typingPrint("Rolling for Intelligence...\n", time)
+        self.dice_rolls("Intelligence")
+        typingPrint(f'Intelligence: {self.stats["Intelligence"]}\n', time)
+        time.sleep(1)
+        typingPrint("Rolling for Wisdom...\n", time)
+        self.dice_rolls("Wisdom")
+        typingPrint(f'Wisdom: {self.stats["Wisdom"]}\n', time)
+        time.sleep(1)
+        typingPrint("Rolling for Charisma...\n", time)
+        self.dice_rolls("Charisma")
+        typingPrint(f'Charisma: {self.stats["Charisma"]}\n', time)
+        time.sleep(1)
+
+    def health_check(self):
+        """Print out current/max HP"""
+        print(f'You have {self.currentHP}/{self.maxHP} HP.')
+
+    def take_damage(self, DMGtype, size):
+        """Define the damage type and dice size"""
+        damage = randint(1, size)
+        if DMGtype in self.elemental_resistance or DMGtype in self.physical_resistance:
+            damage //= 2
+        self.currentHP -= damage
+        return damage
+
+    def dicerolls(self):
+        """Rolling 4d6 to get stat value for PC"""
+        rolls = []
+        # roll 4d6
+        for roll in range(4):
+            r = randint(1, 6)
+            rolls.append(r)
+        # Drop the lowest number and then add to single value
+        del rolls[rolls.index(min(rolls))]
+        val = sum(rolls)
+        return str(val)
+
+    def allocation(self):
+        # Display rolls and instructions
+        stats = []
+        attributes = ["Strength", "Dexterity", "Constitution", "Intelligence", "Wisdom", "Charisma"]
+
+        for _ in range(6):
+            stats.append((Player.dicerolls(self)))
+
+        print("Please assign a stat to a selected attribute by entering the number then the attribute.\n"
+              "For example, '10 strength' will assign the stat 10 to your strength, if you have a 10 showing.\n"
+              "Type 'Finish' when you think you're ready to view your allocation before replacing or continuing.\n")
+
+        print("Please select a stat and an attribute")
+
+        print("Your rolled stats are:\n" + ', '.join(stats) + "\n")
+        print("Your attributes are:\n" + ', '.join(attributes) + "\n")
+
+        # Allocate
+        while len(stats) != 0:
+            input_text = input("> ").title()
+            words = input_text.split()
+            print(words[0], words[1], len(stats))
+            if words[0] in stats and words[1] in attributes:
+                self.stats[words[1]] += int(words[0])
+                stats.remove(words[0])
+                attributes.remove(words[1])
+                print("The remaining options are:\n")
+                print(stats)
+                print(attributes)
+            elif words[0] in ["fin", "end", "finish", "cont", "continue"]:
+                print(self.stats)
+                break
+            else:
+                print("Error")
+                break
+
+
+class Scene(object):
+
+    def enter(self):
+        print(self.name)  # works
+        print(self.descrip)  # works
+    # this applies to all classes under Scene, but Zed does it differently
+
+
+class Engine(object):
+
+    def __init__(self, scene_map):
+        self.name = "name"
+        self.descrip = "descrip"
+        self.scene_map = scene_map
+        # gets the game's map from instance "mymap" at bottom of this file
+
+    def play(self):
+        current_scene = self.scene_map.opening_scene()
+        last_scene = self.scene_map.next_scene('Finished')
+        # see the Map object: runs function named opening_scene()
+        # this runs only once 
+        # this STARTS THE GAME
+
+        # this (below) is supposed to be an infinite loop (but mine is not)
+        while not last_scene:
+            next_scene_name = current_scene.enter()
+            current_scene = self.scene_map.next_scene(next_scene_name)
+            print("\n--------")
+            current_scene.enter()
+
+            #  note: will throw error if no new scene passed in by next line:
+            next_scene_name = current_scene.action()
+            #  get the name of the next scene from the action() function that
+            #     runs in the current scene - what it returns
+
+            current_scene = self.scene_map.next_scene(next_scene_name)
+            #  here we use that val returned by current scene to go to
+            #    the next scene, running function in Map
+
+
+class DamageType(Enum):
+    SLASHING = auto()
+    CRUSHING = auto()
+    PIERCING = auto()
+    FIRE = auto()
+    WATER = auto()
+    LIGHTNING = auto()
+
+
+class DamageMod(Enum):
+    STRENGTH = auto()
+    DEXTERITY = auto()
+    CONSTITUTION = auto()
+    INTELLIGENCE = auto()
+    WISDOM = auto()
+    CHARISMA = auto()
+
+
+class Item:
+    """The base class for all items"""
+
+    def __init__(self, name, description, value, magical):
+        self.name = name
+        self.description = description
+        self.value = value
+        self.magical = magical
+
+    def __repr__(self):
+        return f"{self.name}\n=====\n{self.description}\nValue: {self.value}\n"
+
+
+class Money(Item):
+    """The currency item used in the world of Kanjin"""
+
+    def __init__(self, name, amt, magical):
+        self.name = name
+        self.amt = amt
+        self.magical = magical
+        super().__init__(name=self.name,
+                         description=f"A small round coin made of {self.name.lower()} "
+                                     f"with the imperial city logo stamped on the face.",
+                         value=self.amt,
+                         magical=self.magical)
+
+
+class Weapon(Item):
+    """The base class for all weapons"""
+
+    def __init__(self, name, description, value, damage1H, damage2H, dmgType, dmgMod, vers, thrown, magical):
+        self.damage1H = damage1H
+        self.damage2H = damage2H
+        self.dmgType = dmgType
+        self.dmgMod = dmgMod
+        self.vers = vers
+        self.thrown = thrown
+        super().__init__(name, description, value, magical)
+
+    def __repr__(self):
+        return f"{self.name}\n=====\n{self.description}\nValue: {self.value}" \
+               f"\nDamage: One Handed - {self.damage1H}" \
+               f"\nDamage: Two Handed - {self.damage2H}\n" \
+               f"Damage Type: {self.dmgType}\nMagical: {self.magical}.\n"
+
+
+class Armor(Item):
+    """The base class for all armor"""
+
+    def __init__(self, name, description, value, grade, ac, disadvantage, dmgRes, magical):
+        self.grade = grade
+        self.ac = ac
+        self.stealthDis = disadvantage
+        self.dmgRes = dmgRes
+        super().__init__(name, description, value, magical)
+
+    def __repr__(self):
+        if self.stealthDis:
+            return f"{self.name}\n=====\n{self.description}\nValue: {self.value}\n" \
+                   f"AC: {self.ac}\nMagical: {self.magical}"
+        elif not self.stealthDis:
+            return f"{self.name}\n=====\n{self.description}\nValue: {self.value}\n" \
+                   f"AC: {self.ac}\nDisadvantage on Stealth checks: {self.stealthDis}\nMagical: {self.magical}"
+
+
+# Different types of coins
+GP1 = Money("Gold", 1, False)
+SP1 = Money("Silver", 1, False)
+CP1 = Money("Copper", 1, False)
+
+rock = Weapon(
+    name="Rock",
+    description="A fist-sized rock, suitable for bludgeoning.",
+    value="No value",
+    damage1H=randint(1, 6),
+    damage2H=0,
+    dmgType=DamageType.CRUSHING,
+    dmgMod=DamageMod.STRENGTH,
+    vers=False,
+    thrown=True,
+    magical=False
+)
+tornRags = Armor(
+    name="Torn Rags",
+    description="A ripped and worn-out outfit.",
+    value=0,
+    grade="Light",
+    ac=0,
+    disadvantage=True,
+    dmgRes="None",
+    magical=False
+)
+# user = Player(*startGame())
+user = Player("Jamie", "Male", 29, "Elf", "Mage")
+
+
+class Begin(Scene):
+    name = "Welcome to Kanjin"
+    descrip = "Chocolate"
+    descTrue = "You return to the cave entrance."
+    descFalse = "You are standing at the entryway to a cave."
+    has_visited = True
+
+    def enter(self):
+        typingPrint(f'\n===================\n', time)
+        typingPrint(f'{Begin.name}', time)
+        typingPrint(f'\n===================\n', time)
+        if self.has_visited:
+            typingPrint(f'\n{self.descTrue}\n'
+                        f'\n', time)
+        else:
+            typingPrint(f'===========\n{self.descFalse}\n', time)
+        Begin.has_visited = True
+
+        user.new_char()
+
+        action = "begin"
+
+        if action == "begin":
+            typingPrint("result", time)
+            return "pod"
+
+
+class CaveEntrance(Scene):
+    name = "Cave Entrance"
+    descTrue = "You are standing at the entryway to a cave."
+    descFalse = "You return to the cave entrance."
+    has_visited = False
+
+    def enter(self):
+        typingPrint(f'\n===========\n{self.name}', time)
+        if not self.has_visited:
+            typingPrint(self.descTrue, time)
+        else:
+            typingPrint(self.descTrue, time)
+
+        action = input(">> ")
+
+        if action == "shoot!":
+            print("result")
+            return "death"
+        elif action == "dodge":
+            print("result")
+            return "pod"
+        else:
+            print("error")
+            return "central corridor"
+
+    # def action(self):
+    #     pass
+
+
+class A1(Scene):
+
+    def __init__(self):
+        self.name = "Laser Weapon Armory"
+        self.descrip = "Shelves and cases line the walls of this room. Weapons of every description " \
+                       "fill the shelves and cases. There is a digital keypad set into the wall."
+
+    def enter(self):
+        print(f'\n===========\n'
+              f'{self.name}'
+              f'\n===========\n'
+              f'{self.descrip}')
+
+    def action(self):
+        pass
+
+
+# class Death(Scene):
+#
+#     def __init__(self):
+#         self.name = "You have died!"
+#         self.descrip = "Your spirit leaves swiftly as your body collapses."
+#
+#     quips = [
+#         "You died. You kinda suck at this.",
+#         "Your Mom would be proud...if she were smarter.",
+#         "Such a loser.",
+#         "I have a small puppy that's better at this.",
+#         "You're worse than your Dad's jokes."
+#     ]
+#
+#     def enter(self):
+#         print(Death.quips[randint(0, len(self.quips) - 1)])
+#         exit(1)
+#
+#     def action(self):
+#         pass
+#
+#
+# class TheBridge(Scene):
+#
+#     def __init__(self):
+#         self.name = "The Bridge"
+#         self.descrip = "Clearly this is a central command station of the spaceship. A wide view screen shows the" \
+#                        " stars against a black curtain of empty space."
+#
+#     def enter(self):
+#         print(f'\n===========\n'
+#               f'{self.name}'
+#               f'\n===========\n'
+#               f'{self.descrip}')
+#
+#     def action(self):
+#         pass
+
+
+class EscapePod(Scene):
+    name = "Escape Pod"
+    with open('pod.txt') as d:
+        descrip = d.read()
+
+    def enter(self):
+        print(f'\n===========\n'
+              f'{self.name}'
+              f'\n===========\n'
+              f'{self.descrip}')
+        action = input(">> ")
+
+        if action == "shoot!":
+            print("result")
+            return "death"
+        elif action == "dodge":
+            print("result")
+            return "pod"
+        else:
+            print("error")
+            return "central corridor"
+
+    def action(self):
+        pass
+
+
+# Map tells us where we are and where we can go
+# it does not make us move - Engine does that 
+class Map(object):
+    scenes = {
+        'Cave entrance': CaveEntrance(),
+        'A1': A1(),
+        # 'death': Death(),
+        # 'bridge': TheBridge(),
+        'pod': EscapePod(),
+        "begin": Begin()
+    }
+
+    def __init__(self, start_scene_key):
+        self.start_scene_key = start_scene_key
+        # above we make a local var named start_scene_key
+        # start_scene_key remains unchanged throughout the game 
+
+    def next_scene(self, scene_name):
+        val = Map.scenes.get(scene_name)
+        # above is how we get value out of the dictionary named scenes 
+        return val
+        # this function can be called repeatedly in the game, 
+        # unlike opening_scene, which is called only ONCE 
+
+    def opening_scene(self):
+        return self.next_scene(self.start_scene_key)
+        # this function exists only for starting, using the first 
+        # string we passed in ('corridor')
+        # it combines the previous 2 functions and is called only once 
+        # (called in Engine) 
+
+
+# print("\nType one of the following words: pod, corridor, bridge, armory, death.")
+seed = "begin"  # or input("> ")
+# this is for testing only - get the "seed" for the map
+
+mymap = Map(seed)  # instantiate a new Map object w/ one arg
+mygame = Engine(mymap)  # instantiate a new Engine object w/ one arg
+mygame.play()  # call function from that Engine instance
