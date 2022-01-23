@@ -1,6 +1,6 @@
 import time
 from random import randint
-from functions import startGame, typingPrint, typingInput
+from functions import startGame, typingPrint
 from enum import Enum, auto
 
 # pyinstaller --onefile --paths=C:\Users\kasai\PycharmProjects\pythonProject\Kanjin\KanjinEngine.py
@@ -113,14 +113,14 @@ class Player:
 
     def current_stats(self):
         """Prints a display of the user's current statistics."""
-        typingPrint("Your current stats are:\n", time)
-        typingPrint(f'Hit Points: {self.currentHP}/{self.maxHP}\n', time)
-        typingPrint(f'Strength: {self.stats["Strength"]}\n', time)
-        typingPrint(f'Dexterity: {self.stats["Dexterity"]}\n', time)
-        typingPrint(f'Constitution: {self.stats["Constitution"]}\n', time)
-        typingPrint(f'Intelligence: {self.stats["Intelligence"]}\n', time)
-        typingPrint(f'Wisdom: {self.stats["Wisdom"]}\n', time)
-        typingPrint(f'Charisma: {self.stats["Charisma"]}\n', time)
+        typingPrint("Your current stats are:", time)
+        typingPrint(f'Hit Points: {self.currentHP}/{self.maxHP}', time)
+        typingPrint(f'Strength: {self.stats["Strength"]}', time)
+        typingPrint(f'Dexterity: {self.stats["Dexterity"]}', time)
+        typingPrint(f'Constitution: {self.stats["Constitution"]}', time)
+        typingPrint(f'Intelligence: {self.stats["Intelligence"]}', time)
+        typingPrint(f'Wisdom: {self.stats["Wisdom"]}', time)
+        typingPrint(f'Charisma: {self.stats["Charisma"]}', time)
 
     def current_equip(self):
         """Prints a list of items currently equipped."""
@@ -348,16 +348,20 @@ tornRags = Armor(
 )
 
 # user = Player("Jamie", "Male", 29, "Elf", "Mage")
-user = Player(startGame())
+user = Player(*startGame())
 
 
 class Begin(Scene):
     name = "Kanjin - An RPG Text Adventure"
-    with open('EntryDescrip.txt') as d:
-        desc = d.read()
+    desc = "Welcome to Kanjin.\nThis game is based off of the D&D SRD ruleset, and will see you, our adventurer, " \
+           "exploring, adventuring, and plundering.\n\nTo play Kanjin is very simple.\nRead the instructions, " \
+           "understand the scene, and take control.\nAll directional queues will be given and clear but you " \
+           "can also use specific commands at almost anytime when you give your input.\n" \
+           "After character creation, type 'Help' to view a list of commands and explanations."
 
     def enter(self):
-        user.new_char()
+        # user.new_char()
+        pass
 
 
 class CaveEntrance(Scene):
