@@ -3,6 +3,8 @@ from random import randint
 from functions import startGame, typingPrint, typingInput
 from enum import Enum, auto
 
+# pyinstaller --onefile --paths=C:\Users\kasai\PycharmProjects\pythonProject\Kanjin\KanjinEngine.py
+
 
 class Player:
     """Character Creation"""
@@ -168,11 +170,12 @@ class Player:
             stats.append(str(val))
             rolls = []
 
-        print("Please assign a stat to a selected attribute by entering the number then the attribute.\n"
-              "For example, '10 strength' will assign the stat 10 to your strength, if you have a 10 showing.\n")
-        print("Please select a stat and an attribute")
-        print("Your rolled stats are:\n" + ', '.join(stats) + "\n")
-        print("Your attributes are:\n" + ', '.join(attributes) + "\n")
+        typingPrint("Please assign a stat to a selected attribute by entering the number then the attribute.\n"
+                    "For example, '10 strength' will assign the stat 10 to your strength, if you have a 10 showing.\n",
+                    time)
+        typingPrint("Please select a stat and an attribute.\n\n", time)
+        typingPrint("Your rolled stats are:\n" + ', '.join(stats) + "\n\n", time)
+        typingPrint("Your attributes are:\n" + ', '.join(attributes) + "\n\n", time)
 
         # Allocate
         while len(stats) != 0:
@@ -185,11 +188,11 @@ class Player:
                 if len(stats) == 0:
                     print("")
                     break
-                print("The remaining options are:\n")
-                print(', '.join(stats))
-                print(', '.join(attributes))
+                typingPrint("The remaining options are:\n", time)
+                typingPrint(', '.join(stats), time)
+                typingPrint(', '.join(attributes), time)
             else:
-                print("Error. Input was not recognised. Please try again with 'Number' + 'Attribute'.")
+                typingPrint("Error. Input was not recognised. Please try again with 'Number' + 'Attribute'.", time)
                 continue
 
 
@@ -344,7 +347,8 @@ tornRags = Armor(
     magical=False
 )
 
-user = Player("Jamie", "Male", 29, "Elf", "Mage")
+# user = Player("Jamie", "Male", 29, "Elf", "Mage")
+user = Player(startGame())
 
 
 class Begin(Scene):
@@ -353,14 +357,7 @@ class Begin(Scene):
         desc = d.read()
 
     def enter(self):
-        # print("")
-        # typingPrint(f'{Begin.name}', time)
-        # print("")
-        # typingPrint(f'\n{self.desc}\n'
-        #             f'\n', time)
-        # user = Player(*startGame())
         user.new_char()
-        return "tutorial"
 
 
 class CaveEntrance(Scene):
@@ -370,7 +367,8 @@ class CaveEntrance(Scene):
     has_visited = False
 
     def enter(self):
-        typingPrint(f'\n===========\n{self.name}', time)
+        typingPrint(f'\n===========\n'
+                    f'{self.name}', time)
         if not self.has_visited:
             typingPrint(self.descTrue, time)
         else:
@@ -379,10 +377,8 @@ class CaveEntrance(Scene):
         action = input(">> ")
 
         if action == "shoot!":
-            print("result")
             return "death"
         elif action == "dodge":
-            print("result")
             return "pod"
         else:
             print("error")
