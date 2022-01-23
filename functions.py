@@ -1,13 +1,10 @@
 import time
-import sys
-from random import randint
 
 
 def typingPrint(text, time, end='\n'):
     for character in text:
         print(character, end="")
         time.sleep(0.09)
-        sys.stdout.flush()
     if end:
         print(end, end='')
 
@@ -24,7 +21,7 @@ def typingInput(text, time, end='\n'):
 
 # start game
 def startGame():
-    typingPrint("Welcome, stranger.")
+    typingPrint("Welcome, stranger.", time)
     while True:
         # Name
         name = typingInput("\n" + "What is your name?" + "\n" + ">> ", time).title()
@@ -92,6 +89,7 @@ def startGame():
 
 
 # Receive action input
+# Under development
 def parse(input_text):
     command = input_text.lower()
     object1 = ""
@@ -135,16 +133,3 @@ def parse(input_text):
 
     return command, object1
 
-
-# Take rolled numbers and assign them to a stat
-def statAllocation():
-    """Rolling 4d6 to get stat value for PC"""
-    rolls = []
-    # roll 4d6
-    for roll in range(4):
-        r = randint(1, 6)
-        rolls.append(r)
-    # Drop the lowest number
-    del rolls[rolls.index(min(rolls))]
-    for i in rolls:
-        print(i)
