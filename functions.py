@@ -1,89 +1,67 @@
-import time
-
-
-def typingPrint(text, time, end='\n'):
-    for character in text:
-        print(character, end="")
-        time.sleep(0.09)
-    if end:
-        print(end, end='')
-
-
-def typingInput(text, time, end='\n'):
-    for character in text:
-        print(character, end="")
-        time.sleep(0.09)
-    if end:
-        print(end, end='')
-    value = input()
-    return value
-
-
 # start game
 def startGame():
-    typingPrint("Welcome, stranger.", time)
+    print("Welcome, stranger.")
     while True:
         # Name
-        name = typingInput("\n" + "What is your name?" + "\n" + ">> ", time).title()
+        name = input("\n" + "What is your name?" + "\n" + ">> ").title()
         # Gender
-        gender = typingInput("What is your gender? Male, Female, or Other." + "\n" + ">> ", time)
+        gender = input("What is your gender? Male, Female, or Other." + "\n" + ">> ").lower()
         while True:
-            if gender.lower() not in ("male", "female", "other"):
-                typingPrint("Sorry I didn't recognise that gender. Please select 'Male', 'Female', or 'Other'.", time)
-                gender = typingInput("\n" + ">> ", time)
+            if gender not in ("male", "female", "other"):
+                print("Sorry I didn't recognise that gender. Please select 'Male', 'Female', or 'Other'.")
+                gender = input("\n" + ">> ").lower()
             else:
                 break
         while True:
             # Age
             try:
-                age = typingInput("How old are you?" + "\n" + ">> ", time)
+                age = input("How old are you?" + "\n" + ">> ")
                 age = int(age)
                 break
             except ValueError:
-                typingPrint("Sorry I didn't recognise that age. Please type in a whole number.", time)
+                print("Sorry I didn't recognise that age. Please type in a whole number.")
                 continue
         # Double check responses
-        correct = typingInput(f"Hello, {name}. You are a {age} year old {gender}.\nIs this correct? Y/N\n>> ", time)
-        if correct.lower() in ['y', 'yes']:
+        correct = input(f"Hello, {name}. You are a {age} year old {gender}.\nIs this correct? Y/N\n>> ").lower()
+        if correct in ['y', 'yes']:
             break
-        elif correct.lower() in ['n', 'no']:
+        elif correct in ['n', 'no']:
             continue
         else:
-            typingPrint("Sorry, I didn't catch that.\n", time)
-            correct = typingInput(f"You are a {age} year old {gender}. \nIs this correct? Y/N\n>> ", time)
-            if correct.lower() in ['y', 'yes']:
+            print("Sorry, I didn't catch that.\n")
+            correct = input(f"You are a {age} year old {gender}. \nIs this correct? Y/N\n>> ").lower()
+            if correct in ['y', 'yes']:
                 break
-            elif correct.lower() in ['n', 'no']:
+            elif correct in ['n', 'no']:
                 continue
     while True:
         # Race
-        race = typingInput("Please select a race from: Human, Elf, or Dwarf.\n>> ", time)
+        race = input("Please select a race from: Human, Elf, or Dwarf.\n>> ").title()
         while True:
             if race.lower() not in ("human", "elf", "dwarf"):
-                race = typingInput("Sorry I didn't recognise that race. Please select 'Human', 'Elf', or 'Dwarf'.\n>> ",
-                                   time)
+                race = input("Sorry I didn't recognise that race. Please select 'Human', "
+                             "'Elf', or 'Dwarf'.\n>> ").title()
             else:
                 break
         # Job
-        job = typingInput("Please select a class from: Warrior, Ranger, or Mage.\n>> ", time)
+        job = input("Please select a class from: Warrior, Ranger, or Mage.\n>> ").lower()
         while True:
-            if job.lower() not in ("warrior", "ranger", "mage"):
-                job = typingInput("Sorry I didn't recognise that class. Please select 'Warrior',"
-                                  " 'Ranger', or 'Mage'.\n>> ", time)
+            if job not in ("warrior", "ranger", "mage"):
+                job = input("Sorry I didn't recognise that class. Please select 'Warrior', 'Ranger', or 'Mage'.\n>> ")
             else:
                 break
         # Final check
-        correct = typingInput(f"{name}, you are a {race} {job}.\nIs this correct? Y/N\n>> ", time)
-        if correct.lower() in ['y', 'yes']:
+        correct = input(f"{name}, you are a {race} {job}.\nIs this correct? Y/N\n>> ").lower()
+        if correct in ['y', 'yes']:
             break
-        elif correct.lower() in ['n', 'no']:
+        elif correct in ['n', 'no']:
             continue
         else:
-            typingPrint("Sorry, I didn't catch that.\n", time)
-            correct = typingInput(f"You are a {race} {job}. \nIs this correct? Y/N\n>> ", time)
-            if correct.lower() in ['y', 'yes']:
+            print("Sorry, I didn't catch that.\n")
+            correct = input(f"You are a {race} {job}. \nIs this correct? Y/N\n>> ").lower()
+            if correct in ['y', 'yes']:
                 break
-            elif correct.lower() in ['n', 'no']:
+            elif correct in ['n', 'no']:
                 continue
     return name, gender, age, race, job
 
