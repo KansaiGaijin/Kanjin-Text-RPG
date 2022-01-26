@@ -1,7 +1,8 @@
 import time
+from functions import startGame
 from random import randint
-from functions import startGame, typingPrint
 from enum import Enum, auto
+
 
 # pyinstaller --onefile --paths=C:\Users\kasai\PycharmProjects\pythonProject\Kanjin\KanjinEngine.py
 
@@ -74,7 +75,6 @@ class Player:
 
     def set_stats_race(self):
         if self.race.lower() == "human":
-            print("Human")
             self.stats["Strength"] += 1,
             self.stats["Dexterity"] += 1,
             self.stats["Constitution"] += 1,
@@ -83,51 +83,46 @@ class Player:
             self.stats["Charisma"] += 1
 
         elif self.race.lower() == "elf":
-            print("Elf")
             self.stats["Dexterity"] += 2
             self.stats["Intelligence"] += 1
 
         elif self.race.lower() == "dwarf":
-            print("Dwarf")
             self.stats["Constitution"] += 2
             self.stats["Wisdom"] += 1
 
     def set_stats_job(self):
         if self.job.lower() == "warrior":
-            print("Warrior")
             self.hitDie = randint(1, 12)
             self.maxHP = (12 + self.mods["Constitution"])
             self.currentHP = (12 + self.mods["Constitution"])
 
         elif self.job.lower() == "ranger":
-            print("Ranger")
             self.hitDie = randint(1, 10)
             self.maxHP = (10 + self.mods["Constitution"])
             self.currentHP = (10 + self.mods["Constitution"])
 
         elif self.job.lower() == "mage":
-            print("Mage")
             self.hitDie = randint(1, 8)
             self.maxHP = (8 + self.mods["Constitution"])
             self.currentHP = (8 + self.mods["Constitution"])
 
     def current_stats(self):
         """Prints a display of the user's current statistics."""
-        typingPrint("Your current stats are:", time)
-        typingPrint(f'Hit Points: {self.currentHP}/{self.maxHP}', time)
-        typingPrint(f'Strength: {self.stats["Strength"]}', time)
-        typingPrint(f'Dexterity: {self.stats["Dexterity"]}', time)
-        typingPrint(f'Constitution: {self.stats["Constitution"]}', time)
-        typingPrint(f'Intelligence: {self.stats["Intelligence"]}', time)
-        typingPrint(f'Wisdom: {self.stats["Wisdom"]}', time)
-        typingPrint(f'Charisma: {self.stats["Charisma"]}', time)
+        print("Your current stats are:")
+        print(f'Hit Points: {self.currentHP}/{self.maxHP}')
+        print(f'Strength: {self.stats["Strength"]}')
+        print(f'Dexterity: {self.stats["Dexterity"]}')
+        print(f'Constitution: {self.stats["Constitution"]}')
+        print(f'Intelligence: {self.stats["Intelligence"]}')
+        print(f'Wisdom: {self.stats["Wisdom"]}')
+        print(f'Charisma: {self.stats["Charisma"]}')
 
     def current_equip(self):
         """Prints a list of items currently equipped."""
-        typingPrint(f"You have equipped:\n {self.armor.name}\n"
-                    f"    {self.armor.description}"
-                    f"\n{self.weapon.name}\n"
-                    f"    {self.weapon.description}\n", time)
+        print(f"You have equipped:\n {self.armor.name}\n"
+              f"    {self.armor.description}"
+              f"\n{self.weapon.name}\n"
+              f"    {self.weapon.description}\n")
 
     def new_char(self):
         """Outputs final stats, armour, and inventory"""
@@ -170,12 +165,11 @@ class Player:
             stats.append(str(val))
             rolls = []
 
-        typingPrint("Please assign a stat to a selected attribute by entering the number then the attribute.\n"
-                    "For example, '10 strength' will assign the stat 10 to your strength, if you have a 10 showing.\n",
-                    time)
-        typingPrint("Please select a stat and an attribute.\n\n", time)
-        typingPrint("Your rolled stats are:\n" + ', '.join(stats) + "\n\n", time)
-        typingPrint("Your attributes are:\n" + ', '.join(attributes) + "\n\n", time)
+        print("Please assign a stat to a selected attribute by entering the number then the attribute.\n"
+              "For example, '10 strength' will assign the stat 10 to your strength, if you have a 10 showing.\n")
+        print("Please select a stat and an attribute.\n\n")
+        print("Your rolled stats are:\n" + ', '.join(stats) + "\n\n")
+        print("Your attributes are:\n" + ', '.join(attributes) + "\n\n")
 
         # Allocate
         while len(stats) != 0:
@@ -188,11 +182,11 @@ class Player:
                 if len(stats) == 0:
                     print("")
                     break
-                typingPrint("The remaining options are:\n", time)
-                typingPrint(', '.join(stats), time)
-                typingPrint(', '.join(attributes), time)
+                print("The remaining options are:\n")
+                print(', '.join(stats))
+                print(', '.join(attributes))
             else:
-                typingPrint("Error. Input was not recognised. Please try again with 'Number' + 'Attribute'.", time)
+                print("Error. Input was not recognised. Please try again with 'Number' + 'Attribute'.")
                 continue
 
 
@@ -348,7 +342,10 @@ tornRags = Armor(
 )
 
 # user = Player("Jamie", "Male", 29, "Elf", "Mage")
+
 user = Player(*startGame())
+
+# enter() needs to return a map name.
 
 
 class Begin(Scene):
@@ -360,8 +357,13 @@ class Begin(Scene):
            "After character creation, type 'Help' to view a list of commands and explanations."
 
     def enter(self):
-        # user.new_char()
-        pass
+
+        print(f'\n===========\n'
+              f'{self.name}')
+        print(f'\n===========\n'
+              f'{self.desc}')
+        user.new_char()
+        return "Cave entrance"
 
 
 class CaveEntrance(Scene):
@@ -371,12 +373,12 @@ class CaveEntrance(Scene):
     has_visited = False
 
     def enter(self):
-        typingPrint(f'\n===========\n'
-                    f'{self.name}', time)
+        print(f'\n===========\n'
+              f'{self.name}')
         if not self.has_visited:
-            typingPrint(self.descTrue, time)
+            print(self.descTrue)
         else:
-            typingPrint(self.descTrue, time)
+            print(self.descTrue)
 
         action = input(">> ")
 
