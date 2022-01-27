@@ -1,5 +1,5 @@
 import time
-from functions import startGame, wait, parse, process_command
+from functions import startGame, wait, parse, get_instructions, query_equip
 from random import randint
 from enum import Enum, auto
 
@@ -132,7 +132,7 @@ class Player:
                 if key == "equipped" and value == False:
                     values = item_value.values()
                     values_list = list(values)
-                    count_value = {values_list[0]}
+                    count_value = values_list[0]
                     print(f'{item_key.name} x {count_value}\n'
                           f'    {item_key.description}\n')
 
@@ -273,13 +273,11 @@ class DamageMod(Enum):
 class Item:
     """The base class for all items"""
 
-    def __init__(self):
-        self.name = ""
-        self.description = "Not much to look at."
-        self.use_description = "Nothing happens."
-        self.aliases = []
-        self.value = ""
-        self.magical = None
+    def __init__(self, name, description, value, magical):
+        self.name = name
+        self.description = description
+        self.value = value
+        self.magical = magical
 
     def __repr__(self):
         return f"{self.name}\n=====\n{self.description}\nValue: {self.value}\n"
@@ -288,26 +286,28 @@ class Item:
 class Money(Item):
     """The currency item used in the world of Kanjin"""
 
-    def __init__(self):
-        super().__init__()
-        self.name = ""
-        self.description = f"A small round coin made of {self.name.lower()} " \
-                           f"with the imperial city logo stamped on the face."
-        self.amt = ""
-        self.magical = None
+    def __init__(self, name, amt, magical):
+        self.name = name
+        self.amt = amt
+        self.magical = magical
+        super().__init__(name=self.name,
+                         description=f"A small round coin made of {self.name.lower()} "
+                                     f"with the imperial city logo stamped on the face.",
+                         value=self.amt,
+                         magical=self.magical)
 
 
 class Weapon(Item):
     """The base class for all weapons"""
 
-    def __init__(self):
-        super().__init__()
-        self.damage1H = None
-        self.damage2H = None
-        self.dmgType = None
-        self.dmgMod = None
-        self.versatile = None
-        self.thrown = None
+    def __init__(self, name, description, value, damage1H, damage2H, dmgType, dmgMod, versatile, thrown, magical):
+        self.damage1H = damage1H
+        self.damage2H = damage2H
+        self.dmgType = dmgType
+        self.dmgMod = dmgMod
+        self.versatile = versatile
+        self.thrown = thrown
+        super().__init__(name, description, value, magical)
 
     def __repr__(self):
         return f"{self.name}\n=====\n{self.description}\nValue: {self.value}" \
@@ -319,12 +319,12 @@ class Weapon(Item):
 class Armor(Item):
     """The base class for all armor"""
 
-    def __init__(self):
-        self.grade = None
-        self.ac = None
-        self.stealthDis = None
-        self.dmgRes = None
-        super().__init__()
+    def __init__(self, name, description, value, grade, ac, disadvantage, dmgRes, magical):
+        self.grade = grade
+        self.ac = ac
+        self.stealthDis = disadvantage
+        self.dmgRes = dmgRes
+        super().__init__(name, description, value, magical)
 
     def __repr__(self):
         if self.stealthDis:
@@ -335,44 +335,65 @@ class Armor(Item):
                    f"AC: {self.ac}\nDisadvantage on Stealth checks: {self.stealthDis}\nMagical: {self.magical}"
 
 
+def process_command(command, object1):
+    # output = "Press enter to begin"
+    # if command:
+    #     output = "Command not understood"
+    if command == "help":
+        output = get_instructions()
+    elif command == "inventory":
+        output = user.current_inventory()
+    elif command == "equipment":
+        response = query_equip()
+        if response == "view":
+            output = user.current_equip()
+        elif response == "change":
+            output = "Sorry that feature isn't ready yet."
+    elif command == "examine":
+        if object1 is not None:
+            output = object1.descrip
+        else:
+            output = "Unable to examine that."
+    elif command == "take":
+        if object1 is not None:
+            output = user.add_inventory(object1)
+        else:
+            output = "Unable to take that."
+    elif command == "error":
+        output = "Command not recognised."
+
+    return output
+
+
 # Different types of coins
-GP1 = Money()
-GP1.name = "Gold"
-GP1.amt = 1
-GP1.magical = False
-
-SP1 = Money()
-SP1.name = "Silver"
-SP1.amt = 1
-SP1.magical = False
-
-CP1 = Money()
-CP1.name = "Copper"
-CP1.amt = 1
-CP1.magical = False
+GP1 = Money("Gold", 1, False)
+SP1 = Money("Silver", 1, False)
+CP1 = Money("Copper", 1, False)
 
 # starting equip
-rock = Weapon()
-rock.name = "Rock"
-rock.description = "A fist-sized rock, suitable for bludgeoning."
-rock.value = "No value"
-rock.damage1H = randint(1, 6)
-rock.damage2H = 0
-rock.dmgType = DamageType.CRUSHING
-rock.dmgMod = DamageMod.STRENGTH
-rock.vers = False
-rock.thrown = True
-rock.magical = False
+rock = Weapon(
+    name="Rock",
+    description="A fist-sized rock, suitable for bludgeoning.",
+    value="No value",
+    damage1H=randint(1, 6),
+    damage2H=0,
+    dmgType=DamageType.CRUSHING,
+    dmgMod=DamageMod.STRENGTH,
+    versatile=False,
+    thrown=True,
+    magical=False
+)
 
-tornRags = Armor()
-tornRags.name = "Torn Rags"
-tornRags.description = "A ripped and worn-out outfit."
-tornRags.value = 0
-tornRags.grade = "Light"
-tornRags.ac = 0
-tornRags.disadvantage = True
-tornRags.dmgRes = "None"
-tornRags.magical = False
+tornRags = Armor(
+    name="Torn Rags",
+    description="A ripped and worn-out outfit.",
+    value=0,
+    grade="Light",
+    ac=0,
+    disadvantage=True,
+    dmgRes="None",
+    magical=False
+)
 
 user = Player("Jamie", "Male", 29, "Elf", "Mage")
 
@@ -492,7 +513,7 @@ class Tutorial(Scene):
     descrip = ("There are certain commands that will be available almost anytime you are able to type,\n"
                "such as viewing your inventory, checking your equipped items, and also changing them.\n"
                "You can also view your stats including your current and max hp.\n"
-               "Give it a go starting with 'Check inventory', 'Check equipment', and 'View stats'."
+               "Give it a go starting with 'Check inventory', 'Check equipment', and 'View stats'.\n"
                "See what else you can do, then enter 'continue' to move to the next step.")
 
     def enter(self):
@@ -500,11 +521,12 @@ class Tutorial(Scene):
               f'{self.name}'
               f'\n===========\n'
               f'{self.descrip}')
-        action = input(">> ")
-        if action != "continue":
-            pass
-        else:
-            process_command(*parse(action))()
+        action = input(">> ").lower()
+        while action != "continue":
+            process_command(*parse(action))
+            action = input(">> ")
+            if action == "continue":
+                return "begin"
 
         # if action == "shoot!":
         #     print("result")
