@@ -1,3 +1,6 @@
+import time
+
+
 def wait():
     input("Press enter to continue...")
 
@@ -70,94 +73,83 @@ def startGame():
     return name, gender, age, race, job
 
 
+def query_equip():
+    print("Do you want to:\n"
+          "1) View your equipped items\n"
+          "2) Change your equipped items")
+    response = input(">> ")
+    if response == "1":
+        return "view"
+    elif response == "2":
+        return "change"
+
+
 def get_instructions():
-    print("There are certain commands that will be available almost anytime you are able to type,\n"
-          "such as viewing your inventory, checking your equipped items, and also changing them.\n"
-          "You can also view your stats including your current and max hp.\n"
-          "Some examples are: 'Check inventory', 'Check equipment', and 'View stats'.")
-    wait()
-    print("To travel to a new area, just type 'Go north' or 'enter cave' etc. Be sure to use the "
-          "language shown to you in game to ensure your commands are recognised.")
+    descrip1 = ("There are certain commands that will be available almost anytime you are able to type,\n"
+                "such as viewing your inventory, checking your equipped items, and also changing them.\n"
+                "You can also view your stats including your current and max hp.\n")
+    descrip2 = ("Some examples are: 'Check inventory', 'Check equipment', and 'View stats'.\n"
+                "To travel to a new area, just type 'Go north' or 'enter cave' etc.\n"
+                "To replay the description of the current area, type 'location'.")
+    print(descrip1)
+    time.sleep(5)
+    print(descrip2)
 
 
 # Receive action input
 # Under development
 def parse(input_text):
     command = input_text.lower()
-    object1 = ""
+    object1 = None
+
     # the .split() function splits the input_text string into a list of individual words
     words = input_text.split()
-    found_examine_words = False
-    found_take_words = False
-    found_help_words = False
-    remaining_words_index = 0
 
-    if words[0] == "help":
-        remaining_words_index = 1
-        found_help_words = True
-    if found_help_words:
-        command = "help"
+    if len(words) > 0:
+        if words[0] == "help":
+            command = "help"
 
-    if words[0] == "examine" or words[0] == "inspect" or words[0] == "study":
-        remaining_words_index = 1
-        found_examine_words = True
-    if words[0] == "look" and words[1] == "at":
-        remaining_words_index = 2
-        found_examine_words = True
+        if words[0] == "inventory":
+            command = "inventory"
 
-    if found_examine_words:
-        if len(words) > remaining_words_index:
-            remaining_words = ""
-            for i in range(remaining_words_index, len(words)):
-                remaining_words += words[i]
-                if i < len(words) - 1:
-                    remaining_words += " "
-            command = "examine"
-            object1 = remaining_words
+        if words[0] == "equip" or words[0] == "equipment":
+            command = "equipment"
 
-    if (words[0] == "take") and len(words) > 1:
-        found_take_words = True
-        remaining_words_index = 1
-    if (words[0] == "pick") and (words[1] == "up") and len(words) > 2:
-        found_take_words = True
-        remaining_words_index = 1
-    if found_take_words:
-        remaining_words = ""
-        for i in range(remaining_words_index, len(words)):
-            remaining_words += words[i]
-            if i < len(words) - 1:
-                remaining_words += " "
-        command = "take"
-        object1 = remaining_words
+        # found_examine_words = False
+        # remaining_words_index = 0
+        # if words[0] == "examine" or words[0] == "inspect" or words[0] == "study":
+        #     remaining_words_index = 1
+        #     found_examine_words = True
+        # if words[0] == "look" and words[1] == "at":
+        #     remaining_words_index = 2
+        #     found_examine_words = True
+        #
+        # if found_examine_words:
+        #     if len(words) > remaining_words_index:
+        #         remaining_words = ""
+        #         for i in range(remaining_words_index, len(words)):
+        #             remaining_words += words[i]
+        #             if i < len(words)-1:
+        #                 remaining_words += " "
+        #         command = "examine"
+        #         object1 = remaining_words
+        #
+        # found_take_words = False
+        # if (words[0] == "take") and len(words) > 1:
+        #     found_take_words = True
+        #     remaining_words_index = 1
+        #
+        # if (words[0] == "pick") and (words[1] == "up") and len(words) > 2:
+        #     found_take_words = True
+        #     remaining_words_index = 1
+        #
+        # if found_take_words:
+        #     remaining_words = ""
+        #     for i in range(remaining_words_index, len(words)):
+        #         remaining_words += words[i]
+        #         if i < len(words) - 1:
+        #             remaining_words += " "
+        #     command = "take"
+        #     object1 = remaining_words
 
     return command, object1
-
-
-def process_command(command, object1):
-    global have_started
-
-    output = "Press enter to begin"
-    if have_started:
-        output = "Command not understood"
-
-    if command == "help":
-        output = get_instructions()
-    elif have_started:
-        if command == "inventory":
-            output = current_inventory()
-        # elif command in ("north", "south", "east", "west"):
-        #     result = try_scene_change(active_scene, scenes, command, player)
-        #     active_scene = result[0]
-        #     output = result[1]
-        elif command == "examine":
-            if object1 is not None:
-                output = examine_object(active_scene, inventory, object1)
-            else:
-                output = "Examine what?"
-        elif command == "take":
-            if object1 is not None:
-                output = user.add_inventory(object1)()
-            else:
-                output = "take what?"
-
-    return output
