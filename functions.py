@@ -1,3 +1,7 @@
+def wait():
+    input("Press enter to continue...")
+
+
 # start game
 def startGame():
     print("Welcome, stranger.")
@@ -66,15 +70,33 @@ def startGame():
     return name, gender, age, race, job
 
 
+def get_instructions():
+    print("There are certain commands that will be available almost anytime you are able to type,\n"
+          "such as viewing your inventory, checking your equipped items, and also changing them.\n"
+          "You can also view your stats including your current and max hp.\n"
+          "Some examples are: 'Check inventory', 'Check equipment', and 'View stats'.")
+    wait()
+    print("To travel to a new area, just type 'Go north' or 'enter cave' etc. Be sure to use the "
+          "language shown to you in game to ensure your commands are recognised.")
+
+
 # Receive action input
 # Under development
 def parse(input_text):
     command = input_text.lower()
     object1 = ""
-    # the .split() function splits the input_text string variable into a python list of individual words
+    # the .split() function splits the input_text string into a list of individual words
     words = input_text.split()
     found_examine_words = False
+    found_take_words = False
+    found_help_words = False
     remaining_words_index = 0
+
+    if words[0] == "help":
+        remaining_words_index = 1
+        found_help_words = True
+    if found_help_words:
+        command = "help"
 
     if words[0] == "examine" or words[0] == "inspect" or words[0] == "study":
         remaining_words_index = 1
@@ -93,7 +115,6 @@ def parse(input_text):
             command = "examine"
             object1 = remaining_words
 
-    found_take_words = False
     if (words[0] == "take") and len(words) > 1:
         found_take_words = True
         remaining_words_index = 1
@@ -111,3 +132,32 @@ def parse(input_text):
 
     return command, object1
 
+
+def process_command(command, object1):
+    global have_started
+
+    output = "Press enter to begin"
+    if have_started:
+        output = "Command not understood"
+
+    if command == "help":
+        output = get_instructions()
+    elif have_started:
+        if command == "inventory":
+            output = current_inventory()
+        # elif command in ("north", "south", "east", "west"):
+        #     result = try_scene_change(active_scene, scenes, command, player)
+        #     active_scene = result[0]
+        #     output = result[1]
+        elif command == "examine":
+            if object1 is not None:
+                output = examine_object(active_scene, inventory, object1)
+            else:
+                output = "Examine what?"
+        elif command == "take":
+            if object1 is not None:
+                output = user.add_inventory(object1)()
+            else:
+                output = "take what?"
+
+    return output
