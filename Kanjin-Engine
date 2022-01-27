@@ -1,5 +1,5 @@
 import time
-from functions import startGame
+from functions import startGame, wait, parse, process_command
 from random import randint
 from enum import Enum, auto
 
@@ -124,6 +124,24 @@ class Player:
               f"\n{self.weapon.name}\n"
               f"    {self.weapon.description}\n")
 
+    def current_inventory(self):
+        """Prints a list of items in your backpack that aren't equipped to your person."""
+        print(f'In your rucksack you have:\n')
+        for item_key, item_value in self.inventory.items():
+            for key, value in item_value.items():
+                if key == "equipped" and value == False:
+                    values = item_value.values()
+                    values_list = list(values)
+                    count_value = {values_list[0]}
+                    print(f'{item_key.name} x {count_value}\n'
+                          f'    {item_key.description}\n')
+
+    def add_inventory(self, object1):
+        self.inventory[object1] = {"Count": object1.count,
+                                   "object": "",
+                                   "equipped": False}
+        return f'{object1} has been added to your rucksack.'
+
     def new_char(self):
         """Outputs final stats, armour, and inventory"""
         self.allocation()
@@ -135,7 +153,7 @@ class Player:
         time.sleep(1)
         self.current_equip()
         print(' ')
-        # current_inventory()
+        self.current_inventory()
         print(' ')
 
     def health_check(self):
@@ -158,6 +176,8 @@ class Player:
             # roll 4d6
             for roll in range(4):
                 r = randint(1, 6)
+                if r < 6:
+                    r = randint(1, 6)
                 rolls.append(r)
             # Drop the lowest number and then add to single value
             del rolls[rolls.index(min(rolls))]
@@ -191,11 +211,13 @@ class Player:
 
 
 class Scene(object):
+    def __init__(self):
+        self.objects = []
 
-    def enter(self):
-        print(self.name)  # works
-        print(self.descrip)  # works
-    # this applies to all classes under Scene, but Zed does it differently
+    # def enter(self):
+    #     print(self.name)  # works
+    #     print(self.descrip)  # works
+    # # this applies to all classes under Scene, but Zed does it differently
 
 
 class Engine(object):
@@ -251,11 +273,13 @@ class DamageMod(Enum):
 class Item:
     """The base class for all items"""
 
-    def __init__(self, name, description, value, magical):
-        self.name = name
-        self.description = description
-        self.value = value
-        self.magical = magical
+    def __init__(self):
+        self.name = ""
+        self.description = "Not much to look at."
+        self.use_description = "Nothing happens."
+        self.aliases = []
+        self.value = ""
+        self.magical = None
 
     def __repr__(self):
         return f"{self.name}\n=====\n{self.description}\nValue: {self.value}\n"
@@ -264,28 +288,26 @@ class Item:
 class Money(Item):
     """The currency item used in the world of Kanjin"""
 
-    def __init__(self, name, amt, magical):
-        self.name = name
-        self.amt = amt
-        self.magical = magical
-        super().__init__(name=self.name,
-                         description=f"A small round coin made of {self.name.lower()} "
-                                     f"with the imperial city logo stamped on the face.",
-                         value=self.amt,
-                         magical=self.magical)
+    def __init__(self):
+        super().__init__()
+        self.name = ""
+        self.description = f"A small round coin made of {self.name.lower()} " \
+                           f"with the imperial city logo stamped on the face."
+        self.amt = ""
+        self.magical = None
 
 
 class Weapon(Item):
     """The base class for all weapons"""
 
-    def __init__(self, name, description, value, damage1H, damage2H, dmgType, dmgMod, vers, thrown, magical):
-        self.damage1H = damage1H
-        self.damage2H = damage2H
-        self.dmgType = dmgType
-        self.dmgMod = dmgMod
-        self.vers = vers
-        self.thrown = thrown
-        super().__init__(name, description, value, magical)
+    def __init__(self):
+        super().__init__()
+        self.damage1H = None
+        self.damage2H = None
+        self.dmgType = None
+        self.dmgMod = None
+        self.versatile = None
+        self.thrown = None
 
     def __repr__(self):
         return f"{self.name}\n=====\n{self.description}\nValue: {self.value}" \
@@ -297,12 +319,12 @@ class Weapon(Item):
 class Armor(Item):
     """The base class for all armor"""
 
-    def __init__(self, name, description, value, grade, ac, disadvantage, dmgRes, magical):
-        self.grade = grade
-        self.ac = ac
-        self.stealthDis = disadvantage
-        self.dmgRes = dmgRes
-        super().__init__(name, description, value, magical)
+    def __init__(self):
+        self.grade = None
+        self.ac = None
+        self.stealthDis = None
+        self.dmgRes = None
+        super().__init__()
 
     def __repr__(self):
         if self.stealthDis:
@@ -314,40 +336,50 @@ class Armor(Item):
 
 
 # Different types of coins
-GP1 = Money("Gold", 1, False)
-SP1 = Money("Silver", 1, False)
-CP1 = Money("Copper", 1, False)
+GP1 = Money()
+GP1.name = "Gold"
+GP1.amt = 1
+GP1.magical = False
 
-rock = Weapon(
-    name="Rock",
-    description="A fist-sized rock, suitable for bludgeoning.",
-    value="No value",
-    damage1H=randint(1, 6),
-    damage2H=0,
-    dmgType=DamageType.CRUSHING,
-    dmgMod=DamageMod.STRENGTH,
-    vers=False,
-    thrown=True,
-    magical=False
-)
-tornRags = Armor(
-    name="Torn Rags",
-    description="A ripped and worn-out outfit.",
-    value=0,
-    grade="Light",
-    ac=0,
-    disadvantage=True,
-    dmgRes="None",
-    magical=False
-)
+SP1 = Money()
+SP1.name = "Silver"
+SP1.amt = 1
+SP1.magical = False
 
-# user = Player("Jamie", "Male", 29, "Elf", "Mage")
+CP1 = Money()
+CP1.name = "Copper"
+CP1.amt = 1
+CP1.magical = False
 
-user = Player(*startGame())
+# starting equip
+rock = Weapon()
+rock.name = "Rock"
+rock.description = "A fist-sized rock, suitable for bludgeoning."
+rock.value = "No value"
+rock.damage1H = randint(1, 6)
+rock.damage2H = 0
+rock.dmgType = DamageType.CRUSHING
+rock.dmgMod = DamageMod.STRENGTH
+rock.vers = False
+rock.thrown = True
+rock.magical = False
+
+tornRags = Armor()
+tornRags.name = "Torn Rags"
+tornRags.description = "A ripped and worn-out outfit."
+tornRags.value = 0
+tornRags.grade = "Light"
+tornRags.ac = 0
+tornRags.disadvantage = True
+tornRags.dmgRes = "None"
+tornRags.magical = False
+
+user = Player("Jamie", "Male", 29, "Elf", "Mage")
+
+
+# user = Player(*startGame())
 
 # enter() needs to return a map name.
-
-
 class Begin(Scene):
     name = "Kanjin - An RPG Text Adventure"
     desc = "Welcome to Kanjin.\nThis game is based off of the D&D SRD ruleset, and will see you, our adventurer, " \
@@ -357,19 +389,25 @@ class Begin(Scene):
            "After character creation, type 'Help' to view a list of commands and explanations."
 
     def enter(self):
-
         print(f'\n===========\n'
               f'{self.name}')
-        print(f'\n===========\n'
+        print(f'===========\n'
               f'{self.desc}')
+        wait()
         user.new_char()
         return "Cave entrance"
 
 
 class CaveEntrance(Scene):
     name = "Cave Entrance"
-    descTrue = "You are standing at the entryway to a cave."
-    descFalse = "You return to the cave entrance."
+    descTrue = "A small broken statue at the mouth of a cave marks the entrance to a dungeon.\n" \
+               "Beyond the broken statue lies a massive, rugged room, too dark to see into.\n" \
+               "You make out the silhouette of broken pottery sprawled around.\n" \
+               "\nBehind you is the forest you traversed through to get here, about 1500m away from the road.\n" \
+               "To the east, a canyon. Too wide to cross and too deep to see the bottom.\n" \
+               "On the west is a mountain face. You are not prepared to take that on.\n"
+    descFalse = "You return to the cave entrance with the road behind you, a canyon to the east, " \
+                "and a mountain face on the right."
     has_visited = False
 
     def enter(self):
@@ -386,20 +424,19 @@ class CaveEntrance(Scene):
             return "death"
         elif action == "dodge":
             return "pod"
+        elif action == "start game":
+            return "begin"
         else:
-            print("error")
-            return "central corridor"
+            print(process_command(*parse(action)))
 
     # def action(self):
     #     pass
 
 
 class A1(Scene):
-
-    def __init__(self):
-        self.name = "Laser Weapon Armory"
-        self.descrip = "Shelves and cases line the walls of this room. Weapons of every description " \
-                       "fill the shelves and cases. There is a digital keypad set into the wall."
+    name = "Laser Weapon Armory"
+    descrip = "Shelves and cases line the walls of this room. Weapons of every description " \
+              "fill the shelves and cases. There is a digital keypad set into the wall."
 
     def enter(self):
         print(f'\n===========\n'
@@ -454,7 +491,9 @@ class Tutorial(Scene):
     name = "Tutorial Level"
     descrip = ("There are certain commands that will be available almost anytime you are able to type,\n"
                "such as viewing your inventory, checking your equipped items, and also changing them.\n"
-               "You can also view your stats including your current and max hp.\n")
+               "You can also view your stats including your current and max hp.\n"
+               "Give it a go starting with 'Check inventory', 'Check equipment', and 'View stats'."
+               "See what else you can do, then enter 'continue' to move to the next step.")
 
     def enter(self):
         print(f'\n===========\n'
@@ -462,30 +501,31 @@ class Tutorial(Scene):
               f'\n===========\n'
               f'{self.descrip}')
         action = input(">> ")
-
-        if action == "shoot!":
-            print("result")
-            return "death"
-        elif action == "dodge":
-            print("result")
-            return "pod"
+        if action != "continue":
+            pass
         else:
-            print("error")
-            return "central corridor"
+            process_command(*parse(action))()
 
-    def action(self):
-        pass
+        # if action == "shoot!":
+        #     print("result")
+        #     return "death"
+        # elif action == "dodge":
+        #     print("result")
+        #     return "pod"
+        # else:
+        #     print("error")
+        #     return "central corridor"
 
 
 # Map tells us where we are and where we can go
 # it does not make us move - Engine does that 
 class Map(object):
     scenes = {
-        'Cave entrance': CaveEntrance(),
+        'cave entrance': CaveEntrance(),
         'A1': A1(),
         # 'death': Death(),
         # 'bridge': TheBridge(),
-        'Tutorial': Tutorial(),
+        'tutorial': Tutorial(),
         "begin": Begin()
     }
 
@@ -503,16 +543,9 @@ class Map(object):
 
     def opening_scene(self):
         return self.next_scene(self.start_scene_key)
-        # this function exists only for starting, using the first 
-        # string we passed in ('corridor')
-        # it combines the previous 2 functions and is called only once 
-        # (called in Engine) 
 
 
-# print("\nType one of the following words: pod, corridor, bridge, armory, death.")
-seed = "begin"  # or input("> ")
-# this is for testing only - get the "seed" for the map
-
-mymap = Map(seed)  # instantiate a new Map object w/ one arg
-mygame = Engine(mymap)  # instantiate a new Engine object w/ one arg
-mygame.play()  # call function from that Engine instance
+seed = "tutorial"  # starts the game
+myMap = Map(seed)  # instantiate a new Map object w/ one arg
+myGame = Engine(myMap)  # instantiate a new Engine object w/ one arg
+myGame.play()  # call function from that Engine instance
