@@ -9,6 +9,8 @@ def wait():
 def startGame():
     print("Welcome, stranger.")
     while True:
+        # Initialise age
+        age = None
         # Name
         name = input("\n" + "What is your name?" + "\n" + ">> ").title()
         # Gender
@@ -101,6 +103,7 @@ def get_instructions():
 def parse(input_text):
     command = input_text.lower()
     object1 = None
+    remaining_words_index = None
 
     # the .split() function splits the input_text string into a list of individual words
     words = input_text.split()
@@ -109,47 +112,51 @@ def parse(input_text):
         if words[0] == "help":
             command = "help"
 
-        if words[0] == "inventory":
-            command = "inventory"
+        if words[0] in ("view", "check", "show"):
+            if words[1] in ("inventory", "bag", "backpack"):
+                command = "inventory"
+            elif words[1] in ("equipment", "equip", "items"):
+                command = "equipment"
+            elif words[1] == "stats":
+                command = "stats"
+            elif words[1] in ("hp", "hitpoints", "health"):
+                command = "hp"
+            elif words[1] == "hit" and words[2] == "points":
+                command = "hp"
 
-        if words[0] == "equip" or words[0] == "equipment":
+        if words[0] in ("equip", "equipment"):
             command = "equipment"
 
-        # found_examine_words = False
-        # remaining_words_index = 0
-        # if words[0] == "examine" or words[0] == "inspect" or words[0] == "study":
-        #     remaining_words_index = 1
-        #     found_examine_words = True
-        # if words[0] == "look" and words[1] == "at":
-        #     remaining_words_index = 2
-        #     found_examine_words = True
-        #
-        # if found_examine_words:
-        #     if len(words) > remaining_words_index:
-        #         remaining_words = ""
-        #         for i in range(remaining_words_index, len(words)):
-        #             remaining_words += words[i]
-        #             if i < len(words)-1:
-        #                 remaining_words += " "
-        #         command = "examine"
-        #         object1 = remaining_words
-        #
-        # found_take_words = False
-        # if (words[0] == "take") and len(words) > 1:
-        #     found_take_words = True
-        #     remaining_words_index = 1
-        #
-        # if (words[0] == "pick") and (words[1] == "up") and len(words) > 2:
-        #     found_take_words = True
-        #     remaining_words_index = 1
-        #
-        # if found_take_words:
-        #     remaining_words = ""
-        #     for i in range(remaining_words_index, len(words)):
-        #         remaining_words += words[i]
-        #         if i < len(words) - 1:
-        #             remaining_words += " "
-        #     command = "take"
-        #     object1 = remaining_words
+        if words[0] in ("inventory", "bag", "backpack"):
+            command = "inventory"
+
+        found_examine_words = False
+        if (words[0] == "examine") and len(words) > 1:
+            found_examine_words = True
+            remaining_words_index = 1
+
+        if found_examine_words:
+            remaining_words = ""
+            for i in range(remaining_words_index, len(words)):
+                remaining_words += words[i]
+                if i < len(words) - 1:
+                    remaining_words += " "
+            command = "examine"
+            object1 = remaining_words
+
+        found_take_words = False
+        if ((words[0] == "take") and len(words) > 1) or \
+                ((words[0] == "pick") and (words[1] == "up") and len(words) > 2):
+            found_take_words = True
+            remaining_words_index = 1
+
+        if found_take_words:
+            remaining_words = ""
+            for i in range(remaining_words_index, len(words)):
+                remaining_words += words[i]
+                if i < len(words) - 1:
+                    remaining_words += " "
+            command = "take"
+            object1 = remaining_words
 
     return command, object1
