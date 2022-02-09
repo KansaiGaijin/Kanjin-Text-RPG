@@ -1,10 +1,37 @@
 import time
-from functions import startGame, wait, parse, get_instructions, query_equip
+from functions import startGame, wait, parse, get_instructions, query_equip, error_message, change_equip
 from random import randint
 from enum import Enum, auto
 
 
 # pyinstaller --onefile --paths=C:\Users\kasai\PycharmProjects\pythonProject\Kanjin\KanjinEngine.py
+
+class Engine(object):
+
+    def __init__(self, scene_map):
+        # self.name = "name"
+        # self.descrip = "descrip"
+        self.seed = None
+        self.scene_map = scene_map
+        # gets the game's map from instance "mymap" at bottom of this file
+
+    def play(self):
+        current_scene = self.scene_map.opening_scene()
+        last_scene = self.scene_map.next_scene('finished')
+
+        while current_scene != last_scene:
+            next_scene_name = current_scene.enter()
+            current_scene = self.scene_map.next_scene(next_scene_name)
+        current_scene.enter()
+
+            # #  note: will throw error if no new scene passed in by next line:
+            # next_scene_name = current_scene.action()
+            # #  get the name of the next scene from the action() function that
+            # #     runs in the current scene - what it returns
+            #
+            # current_scene = self.scene_map.next_scene(next_scene_name)
+            # #  here we use that val returned by current scene to go to
+            # #    the next scene, running function in Map
 
 
 class Player:
@@ -54,6 +81,10 @@ class Player:
         self.inventory = {rock: {"Count": 1,
                                  "object": Weapon,
                                  "equipped": True
+                                 },
+                          paper: {"Count": 1,
+                                 "object": Weapon,
+                                 "equipped": False
                                  },
                           tornRags: {"Count": 1,
                                      "object": Armor,
@@ -126,26 +157,64 @@ class Player:
 
     def current_inventory(self):
         """Prints a list of items in your backpack that aren't equipped to your person."""
-        print(f'In your rucksack you have:\n')
-        for item_key, item_value in self.inventory.items():
-            for key, value in item_value.items():
-                if (key == "equipped") and not value:
-                    values = item_value.values()
-                    values_list = list(values)
-                    count_value = values_list[0]
+        print(f'In your rucksack you have:')
+        for item_key, item_value in self.inventory.items():  # string, dictionary
+            for key, value in item_value.items():  # variable/object, integer
+                if (key == "equipped") and not value:  # if equipped = False
+                    values = item_value.values()  # make a variable of all values
+                    values_list = list(values)  # turn variable into a list
+                    count_value = values_list[0]  # take the first value from list - why?
                     print(f'{item_key.name} x {count_value}\n'
-                          f'    {item_key.description}\n')
+                          f'    {item_key.description}')
+
+    def drop_item(self, object1):
+        pass
+
+    def loot_object(self, object1):
+        for scene, room in Map.scenes.items():  # iterate map scenes
+            if Engine.seed == scene:  # set new Engine seed in each room.enter()
+                for list_key, list_value in room.lootable_items.items():  # string, dictionary
+                    if object1 in list_key:  # if user input is in the lootable items
+                        for var, count in list_value.items():  # variable/object, integer
+
+                            if var in self.inventory:  # if object is in inventory
+                                self.inventory[var]["Count"] += count  # increase item count
+                                print(f'{var.name} x {count} has been added to your existing stack.')
+
+                            elif var not in self.inventory[var]:  # if variable not in inventory
+                                self.inventory[var] = {"Count": count,  # add it in
+                                                       "object": var.type,
+                                                       "equipped": False}
+                                print(f'{var.name} x {count} has been added to your rucksack.')
+
+                        del room.lootable_items[object1]  # remove item from lootable list
+                        break
+                    else:
+                        print("You don't see one of those to loot.")
+                        break
 
     def add_inventory(self, object1):
-        for scene, room in Map.scenes.items():
-            if seed == scene:
-                for list_key, list_value in room.available_items.items():
-                    for var, count in list_value.items():
-                        if object1 in list_key:
-                            self.inventory[var] = {"Count": count,
-                                                   "object": var.type,
-                                                   "equipped": False}
-                            print(f'{var.name} has been added to your rucksack.')
+        for scene, room in Map.scenes.items():  # iterate map scenes
+            if Engine.seed == scene:  # set new Engine seed in each room.enter()
+                for list_key, list_value in room.available_items.items():  # string, dictionary
+                    if object1 in list_key:  # if user input is in the available items
+                        for var, count in list_value.items():  # variable/object, integer
+
+                            if var in self.inventory:  # if object is in inventory
+                                self.inventory[var]["Count"] += count  # increase item count
+                                print(f'{var.name} x {count} has been added to your existing stack.')
+
+                            elif var not in self.inventory[var]:  # if variable not in inventory
+                                self.inventory[var] = {"Count": count,  # add it in
+                                                       "object": var.type,
+                                                       "equipped": False}
+                                print(f'{var.name} x {count} has been added to your rucksack.')
+
+                        del room.available_items[object1]  # remove item from available list
+                        break
+                    elif object1 not in list_key:
+                        print("You don't see any lying around..")
+                        break
 
     def new_char(self):
         """Outputs final stats, armour, and inventory"""
@@ -223,38 +292,6 @@ class Scene(object):
     #     print(self.name)  # works
     #     print(self.descrip)  # works
     # # this applies to all classes under Scene, but Zed does it differently
-
-
-class Engine(object):
-
-    def __init__(self, scene_map):
-        self.name = "name"
-        self.descrip = "descrip"
-        self.seed = "seed"
-        self.scene_map = scene_map
-        # gets the game's map from instance "mymap" at bottom of this file
-
-    def play(self):
-        current_scene = self.scene_map.opening_scene()
-        last_scene = self.scene_map.next_scene('Finished')
-        # see the Map object: runs function named opening_scene()
-        # this runs only once 
-        # this STARTS THE GAME
-
-        while not last_scene:
-            next_scene_name = current_scene.enter()
-            current_scene = self.scene_map.next_scene(next_scene_name)
-            print("\n--------\n")
-            current_scene.enter()
-
-            #  note: will throw error if no new scene passed in by next line:
-            next_scene_name = current_scene.action()
-            #  get the name of the next scene from the action() function that
-            #     runs in the current scene - what it returns
-
-            current_scene = self.scene_map.next_scene(next_scene_name)
-            #  here we use that val returned by current scene to go to
-            #    the next scene, running function in Map
 
 
 class DamageType(Enum):
@@ -374,7 +411,7 @@ def process_command(command, object1):
         if response == "view":
             user.current_equip()
         elif response == "change":
-            output = "Sorry that feature isn't ready yet."
+            output = change_equip()
     elif command == "examine":
         for item_key, item_value in user.inventory.items():
             if object1 == item_key.name.lower():
@@ -383,11 +420,10 @@ def process_command(command, object1):
                 output = "Unable to examine that."
     elif command == "take":
         user.add_inventory(object1)
-        print("")
-    # else:
-    #     output = "Unable to take that."
-    # elif command == "error":
-    #     output = "Command not recognised."
+    elif command == "loot":
+        user.loot_object(object1)
+    elif command == "error":
+        output = error_message()
 
     return output
 
@@ -437,34 +473,43 @@ user = Player("Jamie", "Male", 29, "Elf", "Mage")
 # enter() needs to return a map name.
 class Tutorial(Scene):
     available_items = {
-        "rock": {rock: 2},
+        "rock": {rock: 12},
         "paper": {paper: 3}
     }
+    lootable_items = {
+        "chest": {GP1: 5, rock: 1},
+        "corpse": {GP1: 100}
+    }
     name = "Tutorial Level"
-    descrip = ("There are certain commands that will be available almost anytime you are able to type,\n"
-               "such as viewing your inventory, checking your equipped items, and also changing them.\n"
-               "You can also view your stats including your current and max hp.\n"
-               "Give it a go starting with 'Check inventory', 'Check equipment', and 'View stats'.\n"
-               "See what else you can do, then enter 'continue' to move to the next step.")
+    # descrip = ("There are certain commands that will be available almost anytime you are able to type,\n"
+    #            "such as viewing your inventory, checking your equipped items, and also changing them.\n"
+    #            "You can also view your stats including your current and max hp.\n"
+    #            "Give it a go starting with 'Check inventory', 'Check equipment', and 'View stats'.\n"
+    #            "See what else you can do, then enter 'continue' to move to the next step.")
+    descrip = f'Scattered around the room you see {available_items["rock"][rock]}x rock.'
     has_visited = False
     current_seed = "tutorial"
 
     def enter(self):
+        Engine.seed = "tutorial"
         if not self.has_visited:
             print("===========")
             print(self.name)
             print("===========")
             print(self.descrip)
+        else:
+            print("Welcome back to the tutorial.")
         self.has_visited = True
         action = input(">> ").lower()
-        while action not in ("continue", "scene"):
+
+        while action not in ("continue", "scene"):  # move scene to parser
             process_command(*parse(action))
             action = input(">> ").lower()
         else:
             if action == "continue":
                 return "begin"
             elif action == "scene":
-                print(self.descrip)
+                print(self.available_items)
                 return self.current_seed
 
     def action(self):
@@ -472,17 +517,20 @@ class Tutorial(Scene):
 
 
 class Begin(Scene):
-    available_items = {}
+    available_items = {
+        "rock": {rock: 10},
+        "paper": {paper: 13}}
     name = "Kanjin - An RPG Text Adventure"
     descrip = "Welcome to Kanjin.\nThis game is based off of the D&D SRD ruleset, and will see you, our adventurer, " \
               "exploring, adventuring, and plundering.\n\nTo play Kanjin is very simple.\nRead the instructions, " \
               "understand the scene, and take control.\nAll directional cues will be given and clear but you " \
               "can also use specific commands at almost anytime when you give your input.\n" \
               "After character creation, type 'Help' to view a list of commands and explanations.\n"
-    has_visited = True
-    seed_name = "begin"
+    has_visited = False
+    current_seed = "begin"
 
     def enter(self):
+        Engine.seed = "begin"
         if not self.has_visited:
             print("===========")
             print(self.name)
@@ -490,18 +538,22 @@ class Begin(Scene):
             print(self.descrip)
             wait()
             # user.new_char()
+        else:
+            print("Welcome back to the beginning")
         self.has_visited = True
-        print(seed)
         action = input(">> ").lower()
-        while action not in ("continue", "scene"):
+
+        while action not in ("continue", "scene", "back"):
             process_command(*parse(action))
             action = input(">> ").lower()
         else:
             if action == "continue":
-                return "begin"
+                return "cave entrance"
+            elif action == "back":
+                return "tutorial"
             elif action == "scene":
                 print(self.descrip)
-                return self.seed_name
+                return self.current_seed
         return "Cave entrance"
 
     def action(self):
@@ -509,8 +561,9 @@ class Begin(Scene):
 
 
 class CaveEntrance(Scene):
+    available_items = {}
     name = "Cave Entrance"
-    descTrue = "A small broken statue at the mouth of a cave marks the entrance to a dungeon.\n" \
+    descrip = "A small broken statue at the mouth of a cave marks the entrance to a dungeon.\n" \
                "Beyond the broken statue lies a massive, rugged room, too dark to see into.\n" \
                "You make out the silhouette of broken pottery sprawled around.\n" \
                "\nBehind you is the forest you traversed through to get here, about 1500m away from the road.\n" \
@@ -519,23 +572,31 @@ class CaveEntrance(Scene):
     descFalse = "You return to the cave entrance with the road behind you, a canyon to the east, " \
                 "and a mountain face on the right."
     has_visited = False
-
-    available_items = {}
+    current_seed = "cave entrance"
 
     def enter(self):
-        print("===========")
-        print(self.name)
+        Engine.seed = "cave entrance"
         if not self.has_visited:
-            print(self.descTrue)
+            print("===========")
+            print(self.name)
+            print("===========")
+            print(self.descrip)
         else:
-            print(self.descTrue)
+            print("Welcome back to the cave")
+        self.has_visited = True
+        action = input(">> ").lower()
 
-        # action = input(">> ").lower()
-        # try:
-        #     process_command(*parse(action))
-        #     action = input(">> ")
-        # except:
-        #     pass
+        while action not in ("continue", "scene", "back"):
+            process_command(*parse(action))
+            action = input(">> ").lower()
+        else:
+            if action == "continue":
+                return "begin"
+            elif action == "back":
+                return "begin"
+            elif action == "scene":
+                print(self.descrip)
+        return "Cave entrance"
 
     def action(self):
         pass
@@ -546,6 +607,7 @@ class A1(Scene):
     name = "Laser Weapon Armory"
     descrip = "Shelves and cases line the walls of this room. Weapons of every description " \
               "fill the shelves and cases. There is a digital keypad set into the wall."
+    current_seed = "A1"
 
     def enter(self):
         print("===========")
@@ -580,7 +642,7 @@ class A1(Scene):
 
 
 # Map tells us where we are and where we can go
-# it does not make us move - Engine does that 
+# it does not make us move - Engine does that
 class Map(object):
     scenes = {
         'tutorial': Tutorial(),
@@ -588,13 +650,13 @@ class Map(object):
         'cave entrance': CaveEntrance(),
         'A1': A1(),
         # 'death': Death(),
-
+        # 'finished': Finished()
     }
 
     def __init__(self, start_scene_key):
         self.start_scene_key = start_scene_key
         # above we make a local var named start_scene_key
-        # start_scene_key remains unchanged throughout the game 
+        # start_scene_key remains unchanged throughout the game
 
     @staticmethod
     def next_scene(scene_name):
