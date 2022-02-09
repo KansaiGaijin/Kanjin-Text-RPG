@@ -1,5 +1,6 @@
 import time
-from functions import startGame, wait, parse, get_instructions, query_equip, error_message, change_equip
+from functions import wait, startGame, query_equip, change_equip, get_instructions
+from functions import error_message, parse
 from random import randint
 from enum import Enum, auto
 
@@ -7,11 +8,11 @@ from enum import Enum, auto
 # pyinstaller --onefile --paths=C:\Users\kasai\PycharmProjects\pythonProject\Kanjin\KanjinEngine.py
 
 class Engine(object):
+    seed = None
 
     def __init__(self, scene_map):
         # self.name = "name"
         # self.descrip = "descrip"
-        self.seed = None
         self.scene_map = scene_map
         # gets the game's map from instance "mymap" at bottom of this file
 
@@ -24,14 +25,14 @@ class Engine(object):
             current_scene = self.scene_map.next_scene(next_scene_name)
         current_scene.enter()
 
-            # #  note: will throw error if no new scene passed in by next line:
-            # next_scene_name = current_scene.action()
-            # #  get the name of the next scene from the action() function that
-            # #     runs in the current scene - what it returns
-            #
-            # current_scene = self.scene_map.next_scene(next_scene_name)
-            # #  here we use that val returned by current scene to go to
-            # #    the next scene, running function in Map
+        # #  note: will throw error if no new scene passed in by next line:
+        # next_scene_name = current_scene.action()
+        # #  get the name of the next scene from the action() function that
+        # #     runs in the current scene - what it returns
+        #
+        # current_scene = self.scene_map.next_scene(next_scene_name)
+        # #  here we use that val returned by current scene to go to
+        # #    the next scene, running function in Map
 
 
 class Player:
@@ -83,9 +84,9 @@ class Player:
                                  "equipped": True
                                  },
                           paper: {"Count": 1,
-                                 "object": Weapon,
-                                 "equipped": False
-                                 },
+                                  "object": Weapon,
+                                  "equipped": False
+                                  },
                           tornRags: {"Count": 1,
                                      "object": Armor,
                                      "equipped": True
@@ -168,14 +169,23 @@ class Player:
                           f'    {item_key.description}')
 
     def drop_item(self, object1):
-        pass
+        x = None
+        for list_key, list_value in self.inventory.items():  # string, dictionary
+            if object1 in list_key.name.lower():  # if user input is in the inventory list
+                x = self.inventory.copy()
+                del x[list_key]
+                print("Did I drop it?")
+        return x
+
+    def update_inventory(self, x):
+        self.inventory = x
 
     def loot_object(self, object1):
         for scene, room in Map.scenes.items():  # iterate map scenes
             if Engine.seed == scene:  # set new Engine seed in each room.enter()
                 for list_key, list_value in room.lootable_items.items():  # string, dictionary
-                    if object1 in list_key:  # if user input is in the lootable items
-                        for var, count in list_value.items():  # variable/object, integer
+                    for var, count in list_value.items():  # variable/object, integer
+                        if object1 in list_key:  # if user input is in the lootable items
 
                             if var in self.inventory:  # if object is in inventory
                                 self.inventory[var]["Count"] += count  # increase item count
@@ -187,7 +197,7 @@ class Player:
                                                        "equipped": False}
                                 print(f'{var.name} x {count} has been added to your rucksack.')
 
-                        del room.lootable_items[object1]  # remove item from lootable list
+                        room.lootable_items[object1][var] = 0  # set item to 0
                         break
                     else:
                         print("You don't see one of those to loot.")
@@ -197,22 +207,46 @@ class Player:
         for scene, room in Map.scenes.items():  # iterate map scenes
             if Engine.seed == scene:  # set new Engine seed in each room.enter()
                 for list_key, list_value in room.available_items.items():  # string, dictionary
-                    if object1 in list_key:  # if user input is in the available items
-                        for var, count in list_value.items():  # variable/object, integer
+                    for var, count in list_value.items():  # variable/object, integer
+                        if object1 in list_key:  # if user input is in the available items
 
-                            if var in self.inventory:  # if object is in inventory
-                                self.inventory[var]["Count"] += count  # increase item count
-                                print(f'{var.name} x {count} has been added to your existing stack.')
+                            response = input(f'There are {room.available_items[object1][var]}.\n'
+                                             f'How many will you take?\n>> ').lower()
+                            if response in ("0", "none"):
+                                break
+                            elif response == "all":
+                                if var in self.inventory:
+                                    self.inventory[var]["Count"] += count  # increase item count
+                                    print(f'{var.name} x {count} has been added to your existing stack.')
+                                    room.available_items[object1][var] = 0
 
-                            elif var not in self.inventory[var]:  # if variable not in inventory
-                                self.inventory[var] = {"Count": count,  # add it in
-                                                       "object": var.type,
-                                                       "equipped": False}
-                                print(f'{var.name} x {count} has been added to your rucksack.')
+                                elif var not in self.inventory:  # if objects not in inventory
+                                    self.inventory[var] = {"Count": count,  # add it in
+                                                           "object": var.type,
+                                                           "equipped": False}
+                                    print(f'{var.name} x {count} has been added to your rucksack.')
+                                    room.available_items[object1][var] = 0
 
-                        del room.available_items[object1]  # remove item from available list
+                            elif int(response) <= count:
+                                if var in self.inventory:
+                                    self.inventory[var]["Count"] += int(response)  # increase item count
+                                    print(f'{var.name} x {response} has been added to your existing stack.')
+                                    room.available_items[object1][var] = \
+                                        room.available_items[object1][var] - int(response)
+
+                                elif var not in self.inventory:  # if objects not in inventory
+                                    self.inventory[var] = {"Count": response,  # add it in
+                                                           "object": var.type,
+                                                           "equipped": False}
+                                    print(f'{var.name} x {response} has been added to your rucksack.')
+                                    room.available_items[object1][var] = \
+                                        room.available_items[object1][var]-int(response)
+
+                            else:
+                                print("You can't take more than exist.")
+
                         break
-                    elif object1 not in list_key:
+                    else:
                         print("You don't see any lying around..")
                         break
 
@@ -404,6 +438,8 @@ def process_command(command, object1):
     output = None
     if command == "help":
         output = get_instructions()
+    # if command == "scene":
+    #     output = read_room()
     elif command == "inventory":
         user.current_inventory()
     elif command == "equipment":
@@ -424,8 +460,22 @@ def process_command(command, object1):
         user.loot_object(object1)
     elif command == "error":
         output = error_message()
+    elif command == "drop":
+        user.update_inventory(user.drop_item(object1))
 
     return output
+
+
+def read_room():
+    print("Glancing around the room you see:")
+    for scene, room in Map.scenes.items():  # iterate map scenes
+        if Engine.seed == scene:  # set new Engine seed in each room.enter()
+            for list_key, list_value in room.available_items.items():  # string, dictionary
+                for var, count in list_value.items():  # variable/object, integer
+                    available_items = f'{room.available_items[list_key][var]}x {list_key}.'
+                    print(available_items)
+                    if room.available_items[list_key][var] == 0:
+                        del room.available_items[list_key]
 
 
 # Different types of coins
@@ -437,7 +487,7 @@ CP1 = Money("Copper", 1, False)
 rock = Weapon(
     name="Rock",
     description="A fist-sized rock, suitable for bludgeoning.",
-    value="No value",
+    value=None,
     damage1H=randint(1, 6),
     damage2H=0,
     dmgType=DamageType.CRUSHING,
@@ -450,7 +500,7 @@ rock = Weapon(
 tornRags = Armor(
     name="Torn Rags",
     description="A ripped and worn-out outfit.",
-    value="No Value",
+    value=None,
     grade="Light",
     ac=0,
     disadvantage=True,
@@ -460,7 +510,7 @@ tornRags = Armor(
 paper = Item(
     name="Paper",
     description="A blank piece of paper",
-    value=0,
+    value=None,
     magical=False
 )
 
@@ -473,20 +523,19 @@ user = Player("Jamie", "Male", 29, "Elf", "Mage")
 # enter() needs to return a map name.
 class Tutorial(Scene):
     available_items = {
-        "rock": {rock: 12},
-        "paper": {paper: 3}
+        "paper": {paper: 3},
+        "rock": {rock: 12}
     }
     lootable_items = {
         "chest": {GP1: 5, rock: 1},
         "corpse": {GP1: 100}
     }
     name = "Tutorial Level"
-    # descrip = ("There are certain commands that will be available almost anytime you are able to type,\n"
-    #            "such as viewing your inventory, checking your equipped items, and also changing them.\n"
-    #            "You can also view your stats including your current and max hp.\n"
-    #            "Give it a go starting with 'Check inventory', 'Check equipment', and 'View stats'.\n"
-    #            "See what else you can do, then enter 'continue' to move to the next step.")
-    descrip = f'Scattered around the room you see {available_items["rock"][rock]}x rock.'
+    descrip = ("There are certain commands that will be available almost anytime you are able to type,\n"
+               "such as viewing your inventory, checking your equipped items, and also changing them.\n"
+               "You can also view your stats including your current and max hp.\n"
+               "Give it a go starting with 'Check inventory', 'Check equipment', and 'View stats'.\n"
+               "See what else you can do, then enter 'continue' to move to the next step.")
     has_visited = False
     current_seed = "tutorial"
 
@@ -502,15 +551,16 @@ class Tutorial(Scene):
         self.has_visited = True
         action = input(">> ").lower()
 
-        while action not in ("continue", "scene"):  # move scene to parser
-            process_command(*parse(action))
-            action = input(">> ").lower()
+        while action != "continue":  # move scene to parser
+            if action == "scene":
+                read_room()
+                action = input(">> ").lower()
+            else:
+                process_command(*parse(action))
+                action = input(">> ").lower()
         else:
             if action == "continue":
                 return "begin"
-            elif action == "scene":
-                print(self.available_items)
-                return self.current_seed
 
     def action(self):
         pass
@@ -564,11 +614,11 @@ class CaveEntrance(Scene):
     available_items = {}
     name = "Cave Entrance"
     descrip = "A small broken statue at the mouth of a cave marks the entrance to a dungeon.\n" \
-               "Beyond the broken statue lies a massive, rugged room, too dark to see into.\n" \
-               "You make out the silhouette of broken pottery sprawled around.\n" \
-               "\nBehind you is the forest you traversed through to get here, about 1500m away from the road.\n" \
-               "To the east, a canyon. Too wide to cross and too deep to see the bottom.\n" \
-               "On the west is a mountain face. You are not prepared to take that on.\n"
+              "Beyond the broken statue lies a massive, rugged room, too dark to see into.\n" \
+              "You make out the silhouette of broken pottery sprawled around.\n" \
+              "\nBehind you is the forest you traversed through to get here, about 1500m away from the road.\n" \
+              "To the east, a canyon. Too wide to cross and too deep to see the bottom.\n" \
+              "On the west is a mountain face. You are not prepared to take that on.\n"
     descFalse = "You return to the cave entrance with the road behind you, a canyon to the east, " \
                 "and a mountain face on the right."
     has_visited = False
