@@ -5,7 +5,6 @@ def wait():
     input("Press enter to continue...")
 
 
-# start game
 def startGame():
     print("Welcome, stranger.")
     while True:
@@ -114,9 +113,6 @@ def change_equip():
                         break
 
 
-
-
-
 def get_instructions():
     descrip1 = ("There are certain commands that will be available almost anytime you are able to type,\n"
                 "such as viewing your inventory, checking your equipped items, and also changing them.\n"
@@ -133,8 +129,6 @@ def error_message():
     print("That command was not recognised. Please try again.")
 
 
-# Receive action input
-# Under development
 def parse(input_text):
     command = input_text.lower()
     object1 = None
@@ -146,6 +140,9 @@ def parse(input_text):
     if len(words) > 0:
         if words[0] == "help":
             command = "help"
+
+        if words[0] == "scene":
+            command = "scene"
 
         if words[0] in ("view", "check", "show"):
             if words[1] in ("inventory", "bag", "backpack"):
@@ -208,8 +205,22 @@ def parse(input_text):
             command = "loot"
             object1 = remaining_words
 
+        found_drop_words = False
+        if (words[0] == "drop") and len(words) > 1:
+            found_drop_words = True
+            remaining_words_index = 1
+
+        if found_drop_words:
+            remaining_words = ""
+            for i in range(remaining_words_index, len(words)):
+                remaining_words += words[i]
+                if i < len(words) - 1:
+                    remaining_words += " "
+            command = "drop"
+            object1 = remaining_words
+
         if words[0] not in ("view", "check", "show", "loot", "examine", "take", "equip", "equipment", "inventory",
-                            "bag", "backpack"):
+                            "bag", "backpack", "drop"):
             command = "error"
 
     return command, object1
