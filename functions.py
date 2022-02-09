@@ -86,6 +86,37 @@ def query_equip():
         return "change"
 
 
+def change_equip():
+    print("Which equipment slot would you like to change?\n"
+          "1) Weapon\n"
+          "2) Armor\n"
+          "3) Other")
+    response = input(">> ")
+    if response == "1":
+        print(f"You currently have {Player.weapon} equipped.\n"
+              f"What item would you like to swap it for?")
+        for item_key, item_value in Player.inventory.items():  # object, dictionary
+            for key, value in item_value.items():  # string, value (int, class, bool)
+                if (key == "object") and value == Weapon:  # if item = class`Weapon`
+                    itemlist = []  # create blank list for items
+                    itemcount = 0  # count how many items in a list (and their positions)
+                    itemcount += 1  # change item count in preparation for next item
+                    print(f'{itemcount}) {item_key.name}\n'  # print items and their positions
+                          f'    {item_key.description}')
+                    itemlist.append(item_key)  # add inventory items to the list
+                    selection = input(">> ")  # take a number
+                    selectionint = int(selection)  # turn into int
+                    user.inventory[user.weapon]  # add equipped item to inventory
+                    user.weapon = itemcount[selectionint]  # change equipped item to selection
+                    if selection not in itemcount:
+                        print("That number wasn't an option.")
+                    else:
+                        break
+
+
+
+
+
 def get_instructions():
     descrip1 = ("There are certain commands that will be available almost anytime you are able to type,\n"
                 "such as viewing your inventory, checking your equipped items, and also changing them.\n"
@@ -96,6 +127,10 @@ def get_instructions():
     print(descrip1)
     time.sleep(5)
     print(descrip2)
+
+
+def error_message():
+    print("That command was not recognised. Please try again.")
 
 
 # Receive action input
@@ -158,5 +193,23 @@ def parse(input_text):
                     remaining_words += " "
             command = "take"
             object1 = remaining_words
+
+        found_loot_words = False
+        if (words[0] == "loot") and len(words) > 1:
+            found_loot_words = True
+            remaining_words_index = 1
+
+        if found_loot_words:
+            remaining_words = ""
+            for i in range(remaining_words_index, len(words)):
+                remaining_words += words[i]
+                if i < len(words) - 1:
+                    remaining_words += " "
+            command = "loot"
+            object1 = remaining_words
+
+        if words[0] not in ("view", "check", "show", "loot", "examine", "take", "equip", "equipment", "inventory",
+                            "bag", "backpack"):
+            command = "error"
 
     return command, object1
