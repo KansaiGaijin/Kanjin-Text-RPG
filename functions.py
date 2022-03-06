@@ -1,4 +1,60 @@
 import time
+import json
+
+with open("SRD.json", encoding="utf8") as f:
+    SRD = json.load(f)
+
+SRDraces = SRD["Races"]
+SRDraces_list = list(SRD['Races'])
+
+
+def show_race(race):
+    for x, y in SRDraces[race].items():
+        if isinstance(y, dict):
+            print(f'\n{x}')
+            for a, b in y.items():
+                if not isinstance(b, dict):
+                    print(f'{a} - {b}')
+                else:
+                    for d, e in b.items():
+                        print(f'{d} - {e}')
+        else:
+            print(f'{x} - {y}')
+
+
+def race_select():
+    race = "None"
+    print("Please select a race to find out more about them:")
+    for i, v in enumerate(SRDraces_list, 1):
+        print(" %d) %s" % (i, v))
+    query = "0"
+    while not query == "1":
+        racial_choice = input(">> ").title()
+        for i, v in enumerate(SRDraces_list, 1):
+            if racial_choice in str(i) or racial_choice == v:
+                for x, y in SRDraces[v].items():
+                    if isinstance(y, dict):
+                        print(f'\n{x}')
+                        for a, b in y.items():
+                            if not isinstance(b, dict):
+                                print(f'{a} - {b}')
+                            else:
+                                for d, e in b.items():
+                                    print(f'{d} - {e}')
+                    else:
+                        print(f'{x} - {y}')
+        query = input("Would you like to select this as your race or view another?\n"
+                      f'1) Select {v} as your race'
+                      "2) View the other races")
+        if query == "1":
+            race = v
+            break
+        elif query == "2":
+            print("Please select a race to find out more about them:")
+            for i, v in enumerate(SRDraces_list, 1):
+                print(" %d) %s" % (i, v))
+            continue
+    return race
 
 
 def wait():
@@ -13,13 +69,22 @@ def startGame():
         # Name
         name = input("\n" + "What is your name?" + "\n" + ">> ").title()
         # Gender
-        gender = input("What is your gender? Male, Female, or Other." + "\n" + ">> ").lower()
+        gender = None
+        gender_select = input("What is your gender?\n"
+                              "1) Male\n2) Female\n3) Other\n>> ").lower()
         while True:
-            if gender not in ("male", "female", "other"):
-                print("Sorry I didn't recognise that gender. Please select 'Male', 'Female', or 'Other'.")
-                gender = input("\n" + ">> ").lower()
+            if gender_select not in ("male", "female", "other", "1", "2", "3"):
+                print("Sorry I didn't recognise that gender. Please select from the following:\n"
+                      "1) Male\n2) Female\n3) Other")
+                gender_select = input(">> ").lower()
             else:
                 break
+        if gender_select in ("1", "male"):
+            gender = "Male"
+        elif gender_select in ("2", "female"):
+            gender = "Female"
+        elif gender_select in ("3", "other"):
+            gender = "Other"
         while True:
             # Age
             try:
@@ -44,14 +109,41 @@ def startGame():
                 continue
     while True:
         # Race
-        race = input("Please select a race from: Human, Elf, or Dwarf.\n>> ").title()
-        while True:
-            if race.lower() not in ("human", "elf", "dwarf"):
-                race = input("Sorry I didn't recognise that race. Please select 'Human', "
-                             "'Elf', or 'Dwarf'.\n>> ").title()
-            else:
+        print("Please select a race to find out more about them:")
+        for i, v in enumerate(SRDraces_list, 1):
+            print(" %d) %s" % (i, v))
+        query = "0"
+        while not query == "1":
+            racial_choice = input(">> ").title()
+            for i, v in enumerate(SRDraces_list, 1):
+                if racial_choice in str(i) or racial_choice == v:
+                    race = v
+                    for x, y in SRDraces[v].items():
+                        if isinstance(y, dict):
+                            print(f'\n{x}')
+                            for a, b in y.items():
+                                if not isinstance(b, dict):
+                                    print(f'{a} - {b}')
+                                else:
+                                    for d, e in b.items():
+                                        print(f'{d} - {e}')
+                        else:
+                            print(f'{x} - {y}')
+
+            query = input("\nWould you like to select this as your race or view another?\n"
+                          f'1) Select {race} as your race\n'
+                          "2) View the other races\n"
+                          ">> ")
+            if query == "1":
                 break
-        # Job
+            elif query == "2":
+                print("Please select a race to find out more about them:")
+                for i, v in enumerate(SRDraces_list, 1):
+                    print(" %d) %s" % (i, v))
+                continue
+            else:
+                print
+
         job = input("Please select a class from: Warrior, Ranger, or Mage.\n>> ").lower()
         while True:
             if job not in ("warrior", "ranger", "mage"):
@@ -98,19 +190,18 @@ def change_equip():
             for key, value in item_value.items():  # string, value (int, class, bool)
                 if (key == "object") and value == Weapon:  # if item = class`Weapon`
                     itemlist = []  # create blank list for items
-                    itemcount = 0  # count how many items in a list (and their positions)
-                    itemcount += 1  # change item count in preparation for next item
-                    print(f'{itemcount}) {item_key.name}\n'  # print items and their positions
-                          f'    {item_key.description}')
-                    itemlist.append(item_key)  # add inventory items to the list
-                    selection = input(">> ")  # take a number
-                    selectionint = int(selection)  # turn into int
-                    user.inventory[user.weapon]  # add equipped item to inventory
-                    user.weapon = itemcount[selectionint]  # change equipped item to selection
-                    if selection not in itemcount:
-                        print("That number wasn't an option.")
-                    else:
-                        break
+                    for i, itemlist in enumerate(zip(itemlist)):
+                        print(f'{i}) {item_key.name}\n'  # print items and their positions
+                              f'    {item_key.description}')
+                        itemlist.append(item_key)  # add inventory items to the list
+                        selection = input(">> ")  # take a number
+                        selectionint = int(selection)  # turn into int
+                        user.inventory[user.weapon]  # add equipped item to inventory
+                        user.weapon = itemcount[selectionint]  # change equipped item to selection
+                        if selection not in itemcount:
+                            print("That number wasn't an option.")
+                        else:
+                            break
 
 
 def get_instructions():
@@ -224,3 +315,8 @@ def parse(input_text):
             command = "error"
 
     return command, object1
+
+
+def skillCheck(skill):
+    """Roll a d20 and add modifier
+    Return value to compare vs a hardcoded DC"""
