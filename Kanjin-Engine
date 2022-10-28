@@ -87,10 +87,9 @@ def read_room():
                         del room.available_items[list_key]
 
 
-user = Player("Jamie", "Male", 30, "Elf", "Mage")
+# user = Player("Jamie", "Male", 30, "Elf", "Mage")
 
-
-# user = Player(*startGame())
+user = Player(*startGame())
 
 
 # enter() needs to return a map name.
