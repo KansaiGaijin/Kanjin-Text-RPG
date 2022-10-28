@@ -1,11 +1,9 @@
-import time
-from functions import wait, startGame, query_equip, change_equip, get_instructions
-from functions import error_message, parse
-from random import randint
-from enum import Enum, auto
-
+from functions import wait, startGame, query_equip, change_equip, get_instructions, error_message, parse
+from functions import current_inventory, current_equipment
+from player import *
 
 # pyinstaller --onefile --paths=C:\Users\kasai\PycharmProjects\pythonProject\Kanjin\KanjinEngine.py
+
 
 class Engine(object):
     seed = None
@@ -35,289 +33,6 @@ class Engine(object):
         # #    the next scene, running function in Map
 
 
-class Player:
-    """Character Creation"""
-
-    # Default Character
-    def __init__(self, name, gender, age, race, job):
-        # Personality
-        self.name = name
-        self.gender = gender
-        self.age = age
-        self.race = race
-        self.job = job
-        # Health
-        self.hitDie = randint(1, 6)
-        self.currentHP = 100
-        self.maxHP = 100
-        # Levels
-        self.level = 1
-        self.exp = 0
-        self.maxEXP = 100
-        # Magic
-        self.spells_known = []
-        self.spells_ready = []
-        # Equipment
-        self.weapon = rock
-        self.armor = tornRags
-        # Defence
-        self.ac = 0
-        self.elemental_resistance = {DamageType.FIRE: False, DamageType.WATER: False, DamageType.LIGHTNING: False}
-        self.physical_resistance = {DamageType.SLASHING: False, DamageType.CRUSHING: False, DamageType.PIERCING: False}
-        # Ability Scores
-        self.stats = {"Strength": 0,
-                      "Dexterity": 0,
-                      "Constitution": 0,
-                      "Intelligence": 0,
-                      "Wisdom": 0,
-                      "Charisma": 0}
-        # Ability Modifiers
-        self.mods = {"Strength": 0,
-                     "Dexterity": 0,
-                     "Constitution": 0,
-                     "Intelligence": 0,
-                     "Wisdom": 0,
-                     "Charisma": 0}
-        # Held items
-        self.inventory = {rock: {"Count": 1,
-                                 "object": Weapon,
-                                 "equipped": True
-                                 },
-                          paper: {"Count": 1,
-                                  "object": Weapon,
-                                  "equipped": False
-                                  },
-                          tornRags: {"Count": 1,
-                                     "object": Armor,
-                                     "equipped": True
-                                     },
-                          GP1: {"Count": 10,
-                                "object": Money,
-                                "equipped": False
-                                },
-                          }
-
-    def getModifier(self):
-        self.mods["Strength"] = -5 + self.stats["Strength"] // 2
-        self.mods["Dexterity"] = -5 + self.stats["Dexterity"] // 2
-        self.mods["Constitution"] = -5 + self.stats["Constitution"] // 2
-        self.mods["Intelligence"] = -5 + self.stats["Intelligence"] // 2
-        self.mods["Wisdom"] = -5 + self.stats["Wisdom"] // 2
-        self.mods["Charisma"] = -5 + self.stats["Charisma"] // 2
-
-    def set_stats_race(self):
-        if self.race.lower() == "human":
-            self.stats["Strength"] += 1,
-            self.stats["Dexterity"] += 1,
-            self.stats["Constitution"] += 1,
-            self.stats["Intelligence"] += 1,
-            self.stats["Wisdom"] += 1,
-            self.stats["Charisma"] += 1
-
-        elif self.race.lower() == "elf":
-            self.stats["Dexterity"] += 2
-            self.stats["Intelligence"] += 1
-
-        elif self.race.lower() == "dwarf":
-            self.stats["Constitution"] += 2
-            self.stats["Wisdom"] += 1
-
-    def set_stats_job(self):
-        if self.job.lower() == "warrior":
-            self.hitDie = randint(1, 12)
-            self.maxHP = (12 + self.mods["Constitution"])
-            self.currentHP = (12 + self.mods["Constitution"])
-
-        elif self.job.lower() == "ranger":
-            self.hitDie = randint(1, 10)
-            self.maxHP = (10 + self.mods["Constitution"])
-            self.currentHP = (10 + self.mods["Constitution"])
-
-        elif self.job.lower() == "mage":
-            self.hitDie = randint(1, 8)
-            self.maxHP = (8 + self.mods["Constitution"])
-            self.currentHP = (8 + self.mods["Constitution"])
-
-    def current_stats(self):
-        """Prints a display of the user's current statistics."""
-        print("Your current stats are:")
-        print(f'Hit Points: {self.currentHP}/{self.maxHP}')
-        print(f'Strength: {self.stats["Strength"]}')
-        print(f'Dexterity: {self.stats["Dexterity"]}')
-        print(f'Constitution: {self.stats["Constitution"]}')
-        print(f'Intelligence: {self.stats["Intelligence"]}')
-        print(f'Wisdom: {self.stats["Wisdom"]}')
-        print(f'Charisma: {self.stats["Charisma"]}')
-
-    def current_equip(self):
-        """Prints a list of items currently equipped."""
-        print(f"You have equipped:\n {self.armor.name}\n"
-              f"    {self.armor.description}"
-              f"\n{self.weapon.name}\n"
-              f"    {self.weapon.description}\n")
-
-    def current_inventory(self):
-        """Prints a list of items in your backpack that aren't equipped to your person."""
-        print(f'In your rucksack you have:')
-        for item_key, item_value in self.inventory.items():  # string, dictionary
-            for key, value in item_value.items():  # variable/object, integer
-                if (key == "equipped") and not value:  # if equipped = False
-                    values = item_value.values()  # make a variable of all values
-                    values_list = list(values)  # turn variable into a list
-                    count_value = values_list[0]  # take the first value from list - why?
-                    print(f'{item_key.name} x {count_value}\n'
-                          f'    {item_key.description}')
-
-    def drop_item(self, object1):
-        x = None
-        for list_key, list_value in self.inventory.items():  # string, dictionary
-            if object1 in list_key.name.lower():  # if user input is in the inventory list
-                x = self.inventory.copy()
-                del x[list_key]
-                print("Did I drop it?")
-        return x
-
-    def update_inventory(self, x):
-        self.inventory = x
-
-    def loot_object(self, object1):
-        for scene, room in Map.scenes.items():  # iterate map scenes
-            if Engine.seed == scene:  # set new Engine seed in each room.enter()
-                for list_key, list_value in room.lootable_items.items():  # string, dictionary
-                    for var, count in list_value.items():  # variable/object, integer
-                        if object1 in list_key:  # if user input is in the lootable items
-
-                            if var in self.inventory:  # if object is in inventory
-                                self.inventory[var]["Count"] += count  # increase item count
-                                print(f'{var.name} x {count} has been added to your existing stack.')
-
-                            elif var not in self.inventory[var]:  # if variable not in inventory
-                                self.inventory[var] = {"Count": count,  # add it in
-                                                       "object": var.type,
-                                                       "equipped": False}
-                                print(f'{var.name} x {count} has been added to your rucksack.')
-
-                        room.lootable_items[object1][var] = 0  # set item to 0
-                        break
-                    else:
-                        print("You don't see one of those to loot.")
-                        break
-
-    def add_inventory(self, object1):
-        for scene, room in Map.scenes.items():  # iterate map scenes
-            if Engine.seed == scene:  # set new Engine seed in each room.enter()
-                for list_key, list_value in room.available_items.items():  # string, dictionary
-                    for var, count in list_value.items():  # variable/object, integer
-                        if object1 in list_key:  # if user input is in the available items
-
-                            response = input(f'There are {room.available_items[object1][var]}.\n'
-                                             f'How many will you take?\n>> ').lower()
-                            if response in ("0", "none"):
-                                break
-                            elif response == "all":
-                                if var in self.inventory:
-                                    self.inventory[var]["Count"] += count  # increase item count
-                                    print(f'{var.name} x {count} has been added to your existing stack.')
-                                    room.available_items[object1][var] = 0
-
-                                elif var not in self.inventory:  # if objects not in inventory
-                                    self.inventory[var] = {"Count": count,  # add it in
-                                                           "object": var.type,
-                                                           "equipped": False}
-                                    print(f'{var.name} x {count} has been added to your rucksack.')
-                                    room.available_items[object1][var] = 0
-
-                            elif int(response) <= count:
-                                if var in self.inventory:
-                                    self.inventory[var]["Count"] += int(response)  # increase item count
-                                    print(f'{var.name} x {response} has been added to your existing stack.')
-                                    room.available_items[object1][var] = \
-                                        room.available_items[object1][var] - int(response)
-
-                                elif var not in self.inventory:  # if objects not in inventory
-                                    self.inventory[var] = {"Count": response,  # add it in
-                                                           "object": var.type,
-                                                           "equipped": False}
-                                    print(f'{var.name} x {response} has been added to your rucksack.')
-                                    room.available_items[object1][var] = \
-                                        room.available_items[object1][var]-int(response)
-
-                            else:
-                                print("You can't take more than exist.")
-
-                        break
-                    else:
-                        print("You don't see any lying around..")
-                        break
-
-    def new_char(self):
-        """Outputs final stats, armour, and inventory"""
-        self.allocation()
-        self.set_stats_race()
-        self.set_stats_job()
-        self.getModifier()
-        self.current_stats()
-        print(' ')
-        time.sleep(1)
-        self.current_equip()
-        print(' ')
-        self.current_inventory()
-        print(' ')
-
-    def health_check(self):
-        """Print out current/max HP"""
-        print(f'You have {self.currentHP}/{self.maxHP} HP.')
-
-    def take_damage(self, DMGtype, size):
-        """Define the damage type and dice size"""
-        damage = randint(1, size)
-        if DMGtype in self.elemental_resistance or DMGtype in self.physical_resistance:
-            damage //= 2
-        self.currentHP -= damage
-        return damage
-
-    def allocation(self):
-        rolls = []
-        stats = []
-        attributes = ["Strength", "Dexterity", "Constitution", "Intelligence", "Wisdom", "Charisma"]
-        while len(stats) != 6:
-            # roll 4d6
-            for roll in range(4):
-                r = randint(1, 6)
-                if r < 6:
-                    r = randint(1, 6)
-                rolls.append(r)
-            # Drop the lowest number and then add to single value
-            del rolls[rolls.index(min(rolls))]
-            val = sum(rolls)
-            stats.append(str(val))
-            rolls = []
-
-        print("Please assign a stat to a selected attribute by entering the number then the attribute.\n"
-              "For example, '10 strength' will assign the stat 10 to your strength, if you have a 10 showing.\n")
-        print("Please select a stat and an attribute.\n\n")
-        print("Your rolled stats are:\n" + ', '.join(stats) + "\n\n")
-        print("Your attributes are:\n" + ', '.join(attributes) + "\n\n")
-
-        # Allocate
-        while len(stats) != 0:
-            input_text = input(">> ").title()
-            words = input_text.split()
-            if words[0] in stats and words[1] in attributes:
-                self.stats[words[1]] += int(words[0])
-                stats.remove(words[0])
-                attributes.remove(words[1])
-                if len(stats) == 0:
-                    print("")
-                    break
-                print("The remaining options are:\n")
-                print(', '.join(stats))
-                print(', '.join(attributes))
-            else:
-                print("Error. Input was not recognised. Please try again with 'Number' + 'Attribute'.")
-                continue
-
-
 class Scene(object):
     def __init__(self):
         self.objects = []
@@ -328,112 +43,6 @@ class Scene(object):
     # # this applies to all classes under Scene, but Zed does it differently
 
 
-class DamageType(Enum):
-    SLASHING = auto()
-    CRUSHING = auto()
-    PIERCING = auto()
-    FIRE = auto()
-    WATER = auto()
-    LIGHTNING = auto()
-
-
-class DamageMod(Enum):
-    STRENGTH = auto()
-    DEXTERITY = auto()
-    CONSTITUTION = auto()
-    INTELLIGENCE = auto()
-    WISDOM = auto()
-    CHARISMA = auto()
-
-
-class ItemType(Enum):
-    ARMOR = auto()
-    WEAPON = auto()
-    MONEY = auto()
-    ITEM = auto()
-
-
-class Item:
-    """The base class for all items"""
-
-    def __init__(self, name, description, value, magical):
-        self.name = name
-        self.description = description
-        self.value = value
-        self.magical = magical
-        self.type = Item
-        self.count = 1
-
-    def __repr__(self):
-        return f"{self.name}\n=====\n{self.description}\nValue: {self.value}\n"
-
-
-class Money(Item):
-    """The currency item used in the world of Kanjin"""
-
-    def __init__(self, name, amt, magical):
-        self.name = name
-        self.amt = amt
-        self.magical = magical
-        self.type = ItemType.MONEY
-        super().__init__(name=self.name,
-                         description=f"A small round coin made of {self.name.lower()} "
-                                     f"with the imperial city logo stamped on the face.",
-                         value=self.amt,
-                         magical=self.magical)
-
-
-class Weapon(Item):
-    """The base class for all weapons"""
-
-    def __init__(self, name, description, value, damage1H, damage2H, dmgType, dmgMod, versatile, thrown, magical):
-        self.damage1H = damage1H
-        self.damage2H = damage2H
-        self.dmgType = dmgType
-        self.dmgMod = dmgMod
-        self.versatile = versatile
-        self.thrown = thrown
-        self.type = Weapon
-        super().__init__(name, description, value, magical)
-
-    def __repr__(self):
-        return f"{self.name}\n=====" \
-               f"\n{self.description}" \
-               f"\nValue: {self.value}" \
-               f"\nDamage: One Handed - {self.damage1H}" \
-               f"\nDamage: Two Handed - {self.damage2H}" \
-               f"\nDamage Type: {self.dmgType}" \
-               f"\nMagical: {self.magical}\n"
-
-
-class Armor(Item):
-    """The base class for all armor"""
-
-    def __init__(self, name, description, value, grade, ac, disadvantage, dmgRes, magical):
-        self.grade = grade
-        self.ac = ac
-        self.stealthDis = disadvantage
-        self.dmgRes = dmgRes
-        self.type = Armor
-        super().__init__(name, description, value, magical)
-
-    def __repr__(self):
-        if self.stealthDis:
-            return f"{self.name}\n" \
-                   f"=====\n" \
-                   f"{self.description}\n" \
-                   f"Value: {self.value}\n" \
-                   f"AC: {self.ac}\n" \
-                   f"Magical: {self.magical}"
-        elif not self.stealthDis:
-            return f"{self.name}\n=====" \
-                   f"\n{self.description}\n" \
-                   f"Value: {self.value}\n" \
-                   f"AC: {self.ac}\n" \
-                   f"Disadvantage on Stealth checks: {self.stealthDis}\n" \
-                   f"Magical: {self.magical}\n"
-
-
 def process_command(command, object1):
     output = None
     if command == "help":
@@ -441,11 +50,11 @@ def process_command(command, object1):
     # if command == "scene":
     #     output = read_room()
     elif command == "inventory":
-        user.current_inventory()
+        current_inventory()
     elif command == "equipment":
         response = query_equip()
         if response == "view":
-            user.current_equip()
+            output = current_equipment()
         elif response == "change":
             output = change_equip()
     elif command == "examine":
@@ -478,43 +87,7 @@ def read_room():
                         del room.available_items[list_key]
 
 
-# Different types of coins
-GP1 = Money("Gold", 1, False)
-SP1 = Money("Silver", 1, False)
-CP1 = Money("Copper", 1, False)
-
-# starting equip
-rock = Weapon(
-    name="Rock",
-    description="A fist-sized rock, suitable for bludgeoning.",
-    value=None,
-    damage1H=randint(1, 6),
-    damage2H=0,
-    dmgType=DamageType.CRUSHING,
-    dmgMod=DamageMod.STRENGTH,
-    versatile=False,
-    thrown=True,
-    magical=False
-)
-
-tornRags = Armor(
-    name="Torn Rags",
-    description="A ripped and worn-out outfit.",
-    value=None,
-    grade="Light",
-    ac=0,
-    disadvantage=True,
-    dmgRes="None",
-    magical=False
-)
-paper = Item(
-    name="Paper",
-    description="A blank piece of paper",
-    value=None,
-    magical=False
-)
-
-user = Player("Jamie", "Male", 29, "Elf", "Mage")
+user = Player("Jamie", "Male", 30, "Elf", "Mage")
 
 
 # user = Player(*startGame())
@@ -534,7 +107,7 @@ class Tutorial(Scene):
     descrip = ("There are certain commands that will be available almost anytime you are able to type,\n"
                "such as viewing your inventory, checking your equipped items, and also changing them.\n"
                "You can also view your stats including your current and max hp.\n"
-               "Give it a go starting with 'Check inventory', 'Check equipment', and 'View stats'.\n"
+               "Give it a go starting with 'Check inventory' or 'Check equipment'.\n"
                "See what else you can do, then enter 'continue' to move to the next step.")
     has_visited = False
     current_seed = "tutorial"
@@ -587,11 +160,11 @@ class Begin(Scene):
             print("===========")
             print(self.descrip)
             wait()
-            # user.new_char()
+            user.new_char()
         else:
             print("Welcome back to the beginning")
         self.has_visited = True
-        action = input(">> ").lower()
+        action = "continue"
 
         while action not in ("continue", "scene", "back"):
             process_command(*parse(action))
