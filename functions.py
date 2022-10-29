@@ -15,6 +15,8 @@ def startGame():
         age = None
         # Name
         name = input(f'\nWhat is your name?\n >> ').title()
+        while len(name) < 2:
+            name = input(f'Input name was too short. Try again. \nWhat is your name?\n >> ').title()
         # Gender
         gender = None
         gender_select = input("What is your gender?\n"
@@ -119,6 +121,10 @@ def startGame():
     return name, gender, age, race, job
 
 
+def startGame_PreGen():
+    """Use this for when the player is familiar with class races and jobs."""
+
+
 def query_equip():
     print("Do you want to:\n"
           "1) View your equipped items\n"
@@ -134,13 +140,16 @@ def query_equip():
 
 
 def change_equip():
-    print("Which equipment slot would you like to change?\n"
-          "1) Weapon\n"
-          "2) Armor\n"
-          "3) Other\n"
-          "4) Return")
-    response = input(">> ")
-    if response == "1":  # Weapon
+    response = input("Which equipment slot would you like to change?\n"
+                     "1) Weapon\n"
+                     "2) Armor\n"
+                     "3) Other\n"
+                     "4) Return\n"
+                     ">> ").title()
+    if response not in ("1", "2", "3", "4", "Weapon", "Armor", "Other", "Return"):
+        print("Sorry I didn't recognise that. Please try again.\n")
+        change_equip()
+    elif response == "1" or "Weapon":  # Weapon
         itemlist = []  # create blank list for items
         print(f"You currently have equipped: \n"
               f"{view_equippedweapon()}")
@@ -175,6 +184,12 @@ def change_equip():
                 print("That wasn't an option.")
         print(f"You currently have equipped: \n"
               f"{view_equippedweapon()}")
+    elif response == "2" or "Armor":
+        pass
+    elif response == "3" or "Other":
+        pass
+    elif response == "4" or "Return":
+        pass
 
 
 def view_equippedweapon():
@@ -338,12 +353,13 @@ def current_equipment():
     print(f'You are currently wearing:')
     for item_key, item_value in Equipment.items():  # string, dictionary
         if item_value is not None:
-            if item_value.itemType == "Weapon":
+            if item_value.itemType == ItemType.WEAPON:
                 print(f'{item_key}: {item_value.name} - {item_value.damage1H}\n'
                       f'    {item_value.description}')
-            elif item_value.itemType == "Armor":
+            elif item_value.itemType == ItemType.ARMOR:
                 print(f'{item_key}: {item_value.name} - AC {item_value.ac}\n'
                       f'    {item_value.description}')
+
 
 def calc_weight():
     pass
