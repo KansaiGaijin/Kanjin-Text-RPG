@@ -1,6 +1,8 @@
 from enum import Enum, auto
 from random import randint
 
+import functions
+
 
 class Player:
     """Character Creation"""
@@ -325,7 +327,7 @@ class Player:
             while len(stats) != 0:
                 input_text = input(">> ").title()
                 words = input_text.split()
-                if len(words) < 2:
+                if len(words) <= 2:
                     if words[0] in stats and words[1] in attributes:
                         self.stats[words[1]] += int(words[0])
                         stats.remove(words[0])
