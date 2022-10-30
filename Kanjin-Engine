@@ -4,6 +4,17 @@ from player import *
 
 # pyinstaller --onefile --paths=C:\Users\kasai\PycharmProjects\pythonProject\Kanjin\KanjinEngine.py
 
+start = input("Create your own or use a pregen?\n 1) Create\n 2) Pregen\n>> ").title()
+if start in ("1", "Create"):
+    user = Player(*startGame())
+elif start in ("2", "Pregen"):
+    name = input("Name: ").title()
+    gender = input("Gender: ").title()
+    age = int(input("Age: "))
+    race = input("Race: ").title()
+    job = input("Job: ").title()
+    user = Player(name, gender, age, race, job)
+
 
 class Engine(object):
     seed = None
@@ -85,11 +96,6 @@ def read_room():
                     print(available_items)
                     if room.available_items[list_key][var] == 0:
                         del room.available_items[list_key]
-
-
-user = Player("Jamie", "Male", 30, "Elf", "Mage")
-
-# user = Player(*startGame())
 
 
 # enter() needs to return a map name.
