@@ -29,8 +29,8 @@ class Player:
         self.armor = tornRags
         # Defence
         self.ac = 0
-        self.elemental_resistance = {DamageType.FIRE: False, DamageType.WATER: False, DamageType.LIGHTNING: False}
-        self.physical_resistance = {DamageType.SLASHING: False, DamageType.CRUSHING: False, DamageType.PIERCING: False}
+        self.elemental_resistance = {DamageType.Fire: False, DamageType.Water: False, DamageType.Lightning: False}
+        self.physical_resistance = {DamageType.Slashing: False, DamageType.Crushing: False, DamageType.Piercing: False}
         # Ability Scores
         self.stats = {"Strength": 0,
                       "Dexterity": 0,
@@ -280,9 +280,9 @@ class Player:
         self.getModifier()
         self.current_stats()
         print(' ')
-        self.current_equip()
+        functions.current_equipment()
         print(' ')
-        self.current_inventory()
+        functions.current_inventory()
         print(' ')
 
     def health_check(self):
@@ -299,12 +299,6 @@ class Player:
 
     def allocation(self):
         while True:
-            self.stats["Strength"] = 0
-            self.stats["Dexterity"] = 0
-            self.stats["Constitution"] = 0
-            self.stats["Intelligence"] = 0
-            self.stats["Wisdom"] = 0
-            self.stats["Charisma"] = 0
             rolls = []
             stats = []
             attributes = ["Strength", "Dexterity", "Constitution", "Intelligence", "Wisdom", "Charisma"]
@@ -331,16 +325,20 @@ class Player:
             while len(stats) != 0:
                 input_text = input(">> ").title()
                 words = input_text.split()
-                if words[0] in stats and words[1] in attributes:
-                    self.stats[words[1]] += int(words[0])
-                    stats.remove(words[0])
-                    attributes.remove(words[1])
-                    if len(stats) == 0:
-                        print("")
-                        break
-                    print("The remaining options are:\n")
-                    print(', '.join(stats))
-                    print(', '.join(attributes))
+                if len(words) < 2:
+                    if words[0] in stats and words[1] in attributes:
+                        self.stats[words[1]] += int(words[0])
+                        stats.remove(words[0])
+                        attributes.remove(words[1])
+                        if len(stats) == 1:
+                            self.stats[attributes[0]] += int(stats[0])
+                            print("")
+                            break
+                        print(f"The remaining stats are:\n {', '.join(stats)}\n\n"
+                              f"The remaining attributes are:\n {', '.join(attributes)}")
+                    else:
+                        print("Error. Input was not recognised. Please try again with 'Number' + 'Attribute'.")
+                        continue
                 else:
                     print("Error. Input was not recognised. Please try again with 'Number' + 'Attribute'.")
                     continue
@@ -373,28 +371,28 @@ class Player:
 
 
 class DamageType(Enum):
-    SLASHING = auto()
-    CRUSHING = auto()
-    PIERCING = auto()
-    FIRE = auto()
-    WATER = auto()
-    LIGHTNING = auto()
+    Slashing = auto()
+    Crushing = auto()
+    Piercing = auto()
+    Fire = auto()
+    Water = auto()
+    Lightning = auto()
 
 
 class DamageMod(Enum):
-    STRENGTH = auto()
-    DEXTERITY = auto()
-    CONSTITUTION = auto()
-    INTELLIGENCE = auto()
-    WISDOM = auto()
-    CHARISMA = auto()
+    Strength = auto()
+    Dexterity = auto()
+    Constitution = auto()
+    Intelligence = auto()
+    Wisdom = auto()
+    Charisma = auto()
 
 
 class ItemType(Enum):
-    ARMOR = auto()
-    WEAPON = auto()
-    MONEY = auto()
-    ITEM = auto()
+    Armor = auto()
+    Weapon = auto()
+    Money = auto()
+    Item = auto()
 
 
 class Slots(Enum):
@@ -420,8 +418,7 @@ class Item:
         self.description = description
         self.value = value
         self.magical = magical
-        self.type = Item
-        self.count = 1
+        self.type = ItemType.Item
 
     def __repr__(self):
         return f"{self.name}\n=====\n{self.description}\nValue: {self.value}\n"
@@ -434,7 +431,7 @@ class Money(Item):
         self.name = name
         self.amt = amt
         self.magical = magical
-        self.type = ItemType.MONEY
+        self.type = ItemType.Money
         super().__init__(name=self.name,
                          description=f"A small round coin made of {self.name.lower()} "
                                      f"with the imperial city logo stamped on the face.",
@@ -446,7 +443,7 @@ class Weapon(Item):
     """The base class for all weapons"""
 
     def __init__(self, name, description, value, slot, damage1H, damage2H,
-                 dmgType, dmgMod, versatile, thrown, itemType, magical):
+                 dmgType, dmgMod, versatile, thrown, magical):
         self.slot = slot
         self.damage1H = damage1H
         self.damage2H = damage2H
@@ -454,7 +451,8 @@ class Weapon(Item):
         self.dmgMod = dmgMod
         self.versatile = versatile
         self.thrown = thrown
-        self.itemType = itemType
+        self.itemType = ItemType.Weapon
+        self.attunement = False
         super().__init__(name, description, value, magical)
 
     def __repr__(self):
@@ -463,20 +461,19 @@ class Weapon(Item):
                f"\nValue: {self.value}" \
                f"\nDamage: One Handed - {self.damage1H}" \
                f"\nDamage: Two Handed - {self.damage2H}" \
-               f"\nDamage Type: {self.dmgType}" \
+               f"\nDamage Type: {self.dmgType.name.title()}" \
                f"\nMagical: {self.magical}"
 
 
 class Armor(Item):
     """The base class for all armor"""
 
-    def __init__(self, name, description, value, grade, ac, disadvantage, dmgRes,
-                 itemType, magical):
+    def __init__(self, name, description, value, grade, ac, disadvantage, dmgRes, magical):
         self.grade = grade
         self.ac = ac
         self.stealthDis = disadvantage
         self.dmgRes = dmgRes
-        self.itemType = itemType
+        self.itemType = ItemType.Armor
         super().__init__(name, description, value, magical)
 
     def __repr__(self):
@@ -509,11 +506,10 @@ rock = Weapon(
     slot=Slots.MainHand,
     damage1H='1d6',
     damage2H=None,
-    dmgType=DamageType.CRUSHING,
-    dmgMod=DamageMod.STRENGTH,
+    dmgType=DamageType.Crushing,
+    dmgMod=DamageMod.Strength,
     versatile=False,
     thrown=True,
-    itemType="Weapon",
     magical=False
 )
 
@@ -524,11 +520,10 @@ dagger = Weapon(
     slot=Slots.MainHand,
     damage1H='1d6',
     damage2H=None,
-    dmgType=DamageType.SLASHING,
-    dmgMod=DamageMod.DEXTERITY,
+    dmgType=DamageType.Slashing,
+    dmgMod=DamageMod.Dexterity,
     versatile=False,
     thrown=True,
-    itemType="Weapon",
     magical=False
 )
 
@@ -540,7 +535,6 @@ tornRags = Armor(
     ac=0,
     disadvantage=True,
     dmgRes="None",
-    itemType="Armor",
     magical=False
 )
 paper = Item(
@@ -582,3 +576,4 @@ Equipment = {
     "Right Ring": None,
     "Attunement": None
 }
+
