@@ -8,6 +8,6 @@ When running the code, make sure the pregen character is hashed out and you're r
 
 While still very much a large work in progress, I am comfortable with the direction the build is taking. Focusing mostly on getting the framework completed, the later steps will be to add more story and scenes, then finally to work on a bit more graphic design.
 
-Taking many cues, pieces of advice, and explanation; this code is still 100% done and made by myself (Caveat: 29/10/2022 have brought in an additional helper)
+Taking many cues, pieces of advice, and explanation; this code is still 100% done and made by myself (Caveat: 29/10/2022 have brought in an Alex to assist.)
 
 The code has no licence and as such is not free, is not available for modification, reduplication, sale, or any other use without explicit permission from myself.
