@@ -4,16 +4,7 @@ from player import *
 
 # pyinstaller --onefile --paths=C:\Users\kasai\PycharmProjects\pythonProject\Kanjin\KanjinEngine.py
 
-start = input("Create your own or use a pregen?\n 1) Create\n 2) Pregen\n>> ").title()
-if start in ("1", "Create"):
-    user = Player(*startGame())
-elif start in ("2", "Pregen"):
-    name = input("Name: ").title()
-    gender = input("Gender: ").title()
-    age = int(input("Age: "))
-    race = input("Race: ").title()
-    job = input("Job: ").title()
-    user = Player(name, gender, age, race, job)
+user = Player(*startGame())
 
 
 class Engine(object):
