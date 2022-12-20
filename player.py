@@ -409,18 +409,20 @@ class Slots(Enum):
     Cloak = auto()
     LeftRing = auto()
     RightRing = auto()
+    Other = auto()
     Attunement = auto()
 
 
 class Item:
     """The base class for all items"""
 
-    def __init__(self, name, description, value, magical):
+    def __init__(self, name, description, value, magical, ItemType, attunement):
         self.name = name
         self.description = description
         self.value = value
         self.magical = magical
-        self.type = ItemType.Item
+        self.itemType = ItemType
+        self.attunement = attunement
 
     def __repr__(self):
         return f"{self.name}\n=====\n{self.description}\nValue: {self.value}\n"
@@ -429,54 +431,79 @@ class Item:
 class Money(Item):
     """The currency item used in the world of Kanjin"""
 
-    def __init__(self, name, amt, magical):
+    def __init__(self, name, amt, magical, ItemType):
         self.name = name
         self.amt = amt
         self.magical = magical
-        self.type = ItemType.Money
+        self.itemType = ItemType
         super().__init__(name=self.name,
                          description=f"A small round coin made of {self.name.lower()} "
                                      f"with the imperial city logo stamped on the face.",
                          value=self.amt,
-                         magical=self.magical)
+                         magical=self.magical,
+                         ItemType=ItemType.Money,
+                         attunement=False)
 
 
 class Weapon(Item):
     """The base class for all weapons"""
 
-    def __init__(self, name, description, value, slot, damage1H, damage2H,
-                 dmgType, dmgMod, versatile, thrown, magical):
+    def __init__(self, name, description, value, slot, damage1H, damage2H, versatiledmg,
+                 dmgType, dmgMod, versatile, thrown, ItemType, magical, attunement):
         self.slot = slot
         self.damage1H = damage1H
         self.damage2H = damage2H
+        self.versatiledmg = versatiledmg
         self.dmgType = dmgType
         self.dmgMod = dmgMod
         self.versatile = versatile
         self.thrown = thrown
-        self.itemType = ItemType.Weapon
-        self.attunement = False
-        super().__init__(name, description, value, magical)
+        self.itemType = ItemType
+        super().__init__(name, description, value, magical, ItemType, attunement)
 
-    def __repr__(self):
-        return f"{self.name}\n=====" \
-               f"\n{self.description}" \
-               f"\nValue: {self.value}" \
-               f"\nDamage: One Handed - {self.damage1H}" \
-               f"\nDamage: Two Handed - {self.damage2H}" \
-               f"\nDamage Type: {self.dmgType.name.title()}" \
-               f"\nMagical: {self.magical}"
+    def __str__(self):
+        if self.damage2H is None and self.damage1H is not None:
+            return f"{self.name}\n=====" \
+                   f"\n{self.description}" \
+                   f"\nValue: {self.value}" \
+                   f"\nDamage: One Handed - {self.damage1H}" \
+                   f"\nDamage Type: {self.dmgType.name.title()}" \
+                   f"\nMagical: {self.magical}" \
+                   f"\nAttunement: {'Required' if self.attunement else 'Not Required'}"
+        elif self.damage1H is None and self.damage2H is not None:
+            return f"{self.name}\n=====" \
+                   f"\n{self.description}" \
+                   f"\nValue: {self.value}" \
+                   f"\nDamage: Two Handed - {self.damage2H}" \
+                   f"\nDamage Type: {self.dmgType.name.title()}" \
+                   f"\nMagical: {self.magical}" \
+                   f"\nAttunement: {'Required' if self.attunement else 'Not Required'}"
+        elif self.versatile:
+            return f"{self.name}\n=====" \
+                   f"\n{self.description}" \
+                   f"\nValue: {self.value}" \
+                   f"\nDamage: Versatile - {self.versatiledmg}" \
+                   f"\nDamage Type: {self.dmgType.name.title()}" \
+                   f"\nMagical: {self.magical}" \
+                   f"\nAttunement: {'Required' if self.attunement else 'Not Required'}"
+        else:
+            return f"{self.name}\n=====" \
+                   f"\n{self.description}" \
+                   f"\nValue: {self.value}" \
+                   f"\nMagical: {self.magical}" \
+                   f"\nAttunement: {'Required' if self.attunement else 'Not Required'}"
 
 
 class Armor(Item):
     """The base class for all armor"""
 
-    def __init__(self, name, description, value, grade, ac, disadvantage, dmgRes, magical):
+    def __init__(self, name, description, value, grade, ac, disadvantage, dmgRes, ItemType, magical, attunement):
         self.grade = grade
         self.ac = ac
         self.stealthDis = disadvantage
         self.dmgRes = dmgRes
-        self.itemType = ItemType.Armor
-        super().__init__(name, description, value, magical)
+        self.itemType = ItemType
+        super().__init__(name, description, value, magical, ItemType, attunement)
 
     def __repr__(self):
         if self.stealthDis:
@@ -496,37 +523,60 @@ class Armor(Item):
 
 
 # Different types of coins
-GP1 = Money("Gold", 1, False)
-SP1 = Money("Silver", 1, False)
-CP1 = Money("Copper", 1, False)
+GP1 = Money("Gold", 1, False, ItemType.Money)
+SP1 = Money("Silver", 1, False, ItemType.Money)
+CP1 = Money("Copper", 1, False, ItemType.Money)
 
 # starting equip
 rock = Weapon(
     name="Rock",
     description="A fist-sized rock, suitable for bludgeoning.",
     value=None,
-    slot=Slots.MainHand,
+    slot="Main Hand",
     damage1H='1d6',
     damage2H=None,
+    versatiledmg=None,
     dmgType=DamageType.Crushing,
     dmgMod=DamageMod.Strength,
     versatile=False,
     thrown=True,
-    magical=False
+    magical=False,
+    ItemType=ItemType.Weapon,
+    attunement=True
 )
 
 dagger = Weapon(
     name="Dagger",
     description="Pointy stabby-stab",
     value=None,
-    slot=Slots.MainHand,
-    damage1H='1d6',
+    slot="Main Hand",
+    damage1H=None,
     damage2H=None,
+    versatiledmg='1d6',
     dmgType=DamageType.Slashing,
     dmgMod=DamageMod.Dexterity,
+    versatile=True,
+    thrown=True,
+    magical=False,
+    ItemType=ItemType.Weapon,
+    attunement=True
+)
+
+polearm = Weapon(
+    name="Polearm",
+    description="Long Pointy stabby-stab",
+    value=None,
+    slot="Two Handed",
+    damage1H=None,
+    damage2H="2d6",
+    versatiledmg=None,
+    dmgType=DamageType.Piercing,
+    dmgMod=DamageMod.Strength,
     versatile=False,
     thrown=True,
-    magical=False
+    magical=False,
+    ItemType=ItemType.Weapon,
+    attunement=True
 )
 
 tornRags = Armor(
@@ -537,13 +587,17 @@ tornRags = Armor(
     ac=0,
     disadvantage=True,
     dmgRes="None",
-    magical=False
+    magical=False,
+    ItemType=ItemType.Armor,
+    attunement=True
 )
 paper = Item(
     name="Paper",
     description="A blank piece of paper",
     value=None,
-    magical=False
+    magical=False,
+    ItemType=ItemType.Item,
+    attunement=True
 )
 
 Inventory = {
@@ -553,6 +607,9 @@ Inventory = {
         dagger: {"Count": 1,
                  "object": Weapon,
                  },
+        polearm: {"Count": 1,
+                  "object": Weapon
+                  },
         paper: {"Count": 1,
                 "object": Item
                 },
@@ -576,6 +633,7 @@ Equipment = {
     "Cloak": None,
     "Left Ring": None,
     "Right Ring": None,
-    "Attunement": None
+    "Other": paper,
+    "Attunement": 0
 }
 
