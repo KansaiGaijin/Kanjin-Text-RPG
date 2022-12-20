@@ -1,4 +1,6 @@
 import time
+
+import player
 from job_list import Barbarian, Cleric, Wizard
 from player import *
 from race_list import Elf, Dwarf, Human
@@ -10,115 +12,130 @@ def wait():
 
 def startGame():
     print("Welcome, stranger.")
-    while True:  # Global check to see if Name, Age, and Gender are correct
-        # Initialise age
-        age = None
-        # Name
-        name = input(f'\nWhat is your name?\n >> ').title()
-        while len(name) < 2:
-            name = input(f'Input name was too short. Try again. \nWhat is your name?\n >> ').title()
-        # Gender
-        while True:
-            gender = None
-            gender_select = input("What is your gender?\n"
-                                  "1) Male\n2) Female\n3) Other\n >> ").lower()
-            if gender_select not in ("male", "female", "other", "1", "2", "3"):
-                print("Sorry I didn't recognise that gender. Please try again.")
-                continue
-            else:
+    start = input("Would you like to create your own character or use pre-generated stats?"
+                  "\n 1) Create a new character\n 2) Pre-generated\n >> ").title()
+    while True:
+        if start in ("2", "Pregen"):
+            print("Please be prepared to enter a name, gender, age, race, and class, from those available in the game."
+                  "\nIf you are unsure what the options are, please go back and create a new character.")
+            create = input("Do you wish to continue? Y/N\n >> ").lower()
+            if create in ("y", "yes"):
+                name = input("Name: ").title()
+                gender = input("Gender: ").title()
+                age = int(input("Age: "))
+                race = input("Race: ").title()
+                job = input("Job: ").title()
+                return name, gender, age, race, job
+            elif create in ("n", "no"):
+                start = "1"
+        elif start in ("1", "create"):
+            while True:  # Global check to see if Name, Age, and Gender are correct
+                # Initialise age
+                age = None
+                # Name
+                name = input(f'\nWhat is your name?\n >> ').title()
+                while len(name) < 2:
+                    name = input(f'Input name was too short. Try again. \nWhat is your name?\n >> ').title()
+                # Gender
+                while True:
+                    gender = None
+                    gender_select = input("What is your gender?\n"
+                                          "1) Male\n2) Female\n3) Other\n >> ").lower()
+                    if gender_select not in ("male", "female", "other", "1", "2", "3"):
+                        print("Sorry I didn't recognise that gender. Please try again.")
+                        continue
+                    else:
+                        break
+                if gender_select in ("1", "male"):
+                    gender = "Male"
+                elif gender_select in ("2", "female"):
+                    gender = "Female"
+                elif gender_select in ("3", "other"):
+                    gender = "Other"
+                while True:
+                    # Age
+                    try:
+                        age = int(input(f'How old are you?\n >> '))
+                        break
+                    except ValueError:
+                        print("Sorry I didn't recognise that age. Please type in a whole number.")
+                        continue
+                # Double check responses
+                correct = input(f"Hello, {name}. You are a {age} year old {gender}."
+                                f"\nIs this correct? Y/N\n >> ").lower()
+                if correct in ['y', 'yes']:
+                    pass
+                elif correct in ['n', 'no']:
+                    continue
+                else:
+                    print("Sorry, I didn't catch that.\n")
+                    correct = input(f"You are a {age} year old {gender}. \nIs this correct? Y/N\n >> ").lower()
+                    if correct in ['y', 'yes']:
+                        break
+                    elif correct in ['n', 'no']:
+                        continue
                 break
-        if gender_select in ("1", "male"):
-            gender = "Male"
-        elif gender_select in ("2", "female"):
-            gender = "Female"
-        elif gender_select in ("3", "other"):
-            gender = "Other"
-        while True:
-            # Age
-            try:
-                age = input(f'How old are you?\n >> ')
-                age = int(age)
-                break
-            except ValueError:
-                print("Sorry I didn't recognise that age. Please type in a whole number.")
-                continue
-        # Double check responses
-        correct = input(f"Hello, {name}. You are a {age} year old {gender}.\nIs this correct? Y/N\n >> ").lower()
-        if correct in ['y', 'yes']:
-            pass
-        elif correct in ['n', 'no']:
-            continue
-        else:
-            print("Sorry, I didn't catch that.\n")
-            correct = input(f"You are a {age} year old {gender}. \nIs this correct? Y/N\n >> ").lower()
-            if correct in ['y', 'yes']:
-                break
-            elif correct in ['n', 'no']:
-                continue
-        break
 
-    while True:  # Global check to see if Race and Job are correct.
-        # Race
-        while True:
-            race = input("Please select a race to learn more about it: Elf, Dwarf, or Human.\n >> ").title()
-            if race not in ("Elf", "Dwarf", "Human", None):
-                race = input("Sorry I didn't recognise that race. "
-                             "Please select 'Elf', 'Dwarf', or 'Human'.\n >> ").title()
-            elif race is None:
-                race = input("Please select a race to learn more about it: Elf, Dwarf, or Human.\n >> ").title()
-                continue
-            else:
-                if race == "Elf":
-                    print(Elf)
-                elif race == "Dwarf":
-                    print(Dwarf)
-                elif race == "Human":
-                    print(Human)
-            print('Would you like to proceed with this race or view another?')
-            proceed = input(f'1) Proceed\n2) View another race\n >> ').lower()
-            if proceed in ('1', 'proceed'):
-                break
-            elif proceed in ('2', 'view', 'view another', 'view another race'):
-                race = None
-                continue
-        # Job
-        while True:
-            job = input("Please select a job to learn more about it: Barbarian, Cleric, or Wizard.\n >> ").title()
-            if job not in ("Barbarian", "Cleric", "Wizard", None):
-                job = input("Sorry I didn't recognise that job. "
-                            "Please select 'Barbarian', 'Cleric', or 'Wizard'.\n >> ").title()
-            elif job is None:
-                job = input("Please select a job to learn more about it: Barbarian, Cleric, or Wizard.\n >> ").title()
-                continue
-            else:
-                if job == "Barbarian":
-                    print(Barbarian)
-                elif job == "Cleric":
-                    print(Cleric)
-                elif job == "Wizard":
-                    print(Wizard)
-            print('Would you like to proceed with this job or view another?')
-            proceed = input(f'1) Proceed\n2) View another job\n >> ').lower()
-            if proceed in ('1', 'proceed'):
-                break
-            elif proceed in ('2', 'view', 'view another', 'view another job'):
-                job = None
-                continue
-        while True:
-            # Final check
-            correct = input(f"{name}, you are a {race} {job}.\nIs this correct? Y/N\n >> ").lower()
-            if correct in ['y', 'yes']:
-                break
-            elif correct in ['n', 'no']:
-                continue
-            else:
-                print("Sorry, I didn't catch that. Please try again.\n")
-                continue
-        return name, gender, age, race, job
-
-
-def startGame_PreGen():
-    """Use this for when the player is familiar with class races and jobs."""
+            while True:  # Global check to see if Race and Job are correct.
+                # Race
+                while True:
+                    race = input("Please select a race to learn more about it: Elf, Dwarf, or Human.\n >> ").title()
+                    if race not in ("Elf", "Dwarf", "Human", None):
+                        race = input("Sorry I didn't recognise that race. "
+                                     "Please select 'Elf', 'Dwarf', or 'Human'.\n >> ").title()
+                    elif race is None:
+                        race = input("Please select a race to learn more about it: Elf, Dwarf, or Human.\n >> ").title()
+                        continue
+                    else:
+                        if race == "Elf":
+                            print(Elf)
+                        elif race == "Dwarf":
+                            print(Dwarf)
+                        elif race == "Human":
+                            print(Human)
+                    print('Would you like to proceed with this race or view another?')
+                    proceed = input(f'1) Proceed\n2) View another race\n >> ').lower()
+                    if proceed in ('1', 'proceed'):
+                        break
+                    elif proceed in ('2', 'view', 'view another', 'view another race'):
+                        race = None
+                        continue
+                # Job
+                while True:
+                    job = input("Please select a job to learn more about it: Barbarian, Cleric, or Wizard."
+                                "\n >> ").title()
+                    if job not in ("Barbarian", "Cleric", "Wizard", None):
+                        job = input("Sorry I didn't recognise that job. "
+                                    "Please select 'Barbarian', 'Cleric', or 'Wizard'.\n >> ").title()
+                    elif job is None:
+                        job = input("Please select a job to learn more about it: Barbarian, Cleric, or Wizard."
+                                    "\n >> ").title()
+                        continue
+                    else:
+                        if job == "Barbarian":
+                            print(Barbarian)
+                        elif job == "Cleric":
+                            print(Cleric)
+                        elif job == "Wizard":
+                            print(Wizard)
+                    print('Would you like to proceed with this job or view another?')
+                    proceed = input(f'1) Proceed\n2) View another job\n >> ').lower()
+                    if proceed in ('1', 'proceed'):
+                        break
+                    elif proceed in ('2', 'view', 'view another', 'view another job'):
+                        job = None
+                        continue
+                while True:
+                    # Final check
+                    correct = input(f"{name}, you are a {race} {job}.\nIs this correct? Y/N\n >> ").lower()
+                    if correct in ['y', 'yes']:
+                        break
+                    elif correct in ['n', 'no']:
+                        continue
+                    else:
+                        print("Sorry, I didn't catch that. Please try again.\n")
+                        continue
+                return name, gender, age, race, job
 
 
 def query_equip():
@@ -137,6 +154,7 @@ def query_equip():
 
 
 def change_equip():
+    canAddAttunement()
     while True:
         response = input("Which equipment slot would you like to change?\n"
                          "1) Weapon\n"
@@ -149,7 +167,6 @@ def change_equip():
             change_equip()
         elif response in ("1", "Weapon"):  # Weapon
             itemlist = ["Return"]  # create blank list for items
-            view_equippedweapon()
             for item_key, item_value in Inventory.items():  # item, attribute
                 for key, value in item_value.items():  # attribute, stat
                     if key == "object" and value == Weapon:  # if item = class `Weapon`
@@ -161,32 +178,45 @@ def change_equip():
             else:
                 print("What would you like to equip?\n")
                 for i, name in enumerate(itemlist, start=1):
-                    option = f'{i}) {name}'
+                    option = f'{i}) {name}\n'
                     print(option)
                 selection = int(input(">> "))
                 for i, name in enumerate(itemlist, start=1):
                     if selection == i:
                         if name == "Return":
                             break
-                        elif name.itemType == Weapon:
-                            try:
-                                if name.attunement:
-                                    print("Not coded attunement yet")  # if item has attunement - check availability
-                            except AttributeError:  # if no attunement
-                                if name.slot == Slots.MainHand:
-                                    equip = {"Main Hand": name}
-                                    Equipment.update(equip)
-                                elif not name.versatile:
-                                    equip = {"Off Hand": name}
-                                    Equipment.update(equip)
-                                else:
-                                    equip = {"Main Hand": None, "Off Hand": None, "Two Handed": name}
-                                    Equipment.update(equip)
-                print(f"You now have equipped: \n"
-                      f"{view_equippedweapon()}")
+                        elif name.itemType == ItemType.Weapon:
+                            if name.attunement:  # if item has attunement
+                                if not canAddAttunement():  # check if can add another attuned item
+                                    if Equipment["Main Hand"].attunement:  # if attune is max, check if swapped weapon is attuned
+                                        if name.versatile:
+                                            Equipment["Main Hand"] = name
+                                            Equipment["Off Hand"] = name
+                                        elif name.slot == "Main Hand":
+                                            Equipment["Main Hand"] = name
+                                            Equipment["Off Hand"] = None
+                                        elif name.slot == "Two Handed":
+                                            Equipment["Main Hand"] = None
+                                            Equipment["Off Hand"] = None
+                                            Equipment["Two Handed"] = name
+                                    else:
+                                        print("\n Cannot equip items: Too many attuned items equipped")  # if not attuned, it refuses the equip.
+                                        break
+                                else:  # If canAddAttunement = True
+                                    if name.versatile:
+                                        Equipment["Main Hand"] = name
+                                        Equipment["Off Hand"] = name
+                                    elif name.slot == "Main Hand":
+                                        Equipment["Main Hand"] = name
+                                        Equipment["Off Hand"] = None
+                                    elif name.slot == "Two Handed":
+                                        Equipment["Main Hand"] = None
+                                        Equipment["Off Hand"] = None
+                                        Equipment["Two Handed"] = name
+
+                print(f"{current_equipment()}")
         elif response in ("2", "Armor"):  # Armor
             itemlist = ["Return"]  # create blank list for items
-            view_equippedarmor()
             for item_key, item_value in Inventory.items():  # item, attribute
                 for key, value in item_value.items():  # attribute, stat
                     if key == "object" and value == Armor:  # if item = class `Weapon`
@@ -224,10 +254,9 @@ def change_equip():
                                     equip = {"Feet": name}
                                     Equipment.update(equip)
                 print(f"You now have equipped: \n"
-                      f"{view_equippedarmor()}")
+                      f"{current_equipment()}")
         elif response in ("3", "Other"):  # Other
             itemlist = ["Return"]  # create blank list for items
-            view_equippedother()
             for item_key, item_value in Inventory.items():  # item, attribute
                 for key, value in item_value.items():  # attribute, stat
                     if key == "object" and value == Armor:  # if item = class `Weapon`
@@ -265,41 +294,11 @@ def change_equip():
                                     equip = {"Right Ring": name}
                                     Equipment.update(equip)
                 print(f"You now have equipped: \n"
-                      f"{view_equippedother()}")
+                      f"{current_equipment()}")
         elif response in ("4", "Return"):
             break
         else:
             print("That wasn't an option.")
-
-
-def view_equippedweapon():
-    equipped = ""
-    for slot, equipment in Equipment.items():
-        if slot in ("Main Hand", "Off Hand", "Two Handed") and equipment is not None:
-            equipped = equipped + f'{slot}: {equipment} \n'
-            return "You currently have equipped: \n" + equipped
-        else:
-            return "You have nothing equipped!"
-
-
-def view_equippedarmor():
-    equipped = ""
-    for slot, equipment in Equipment.items():
-        if slot in ("Helm", "Chest", "Wrists", "Feet") and equipment is not None:
-            equipped = equipped + f'{slot}: {equipment} \n'
-            return "You currently have equipped: \n" + equipped
-        else:
-            return "You have nothing equipped!"
-
-
-def view_equippedother():
-    equipped = ""
-    for slot, equipment in Equipment.items():
-        if slot in ("Neck", "Cloak", "Left Ring", "Right Ring") and equipment is not None:
-            equipped = equipped + f'{slot}: {equipment} \n'
-            return "You currently have equipped: \n" + equipped
-        else:
-            return "You have nothing equipped!"
 
 
 def get_instructions():
@@ -314,6 +313,19 @@ def get_instructions():
     print(descrip2)
 
 
+def canAddAttunement():
+    attune = 0
+    for slot, equipment in Equipment.items():
+        if isinstance(equipment, Weapon):
+            if equipment.attunement:
+                attune += 1
+    Equipment["Attunement"] = attune
+    if attune > 3:
+        return False
+    else:
+        return True
+
+
 def error_message():
     print("That command was not recognised. Please try again.")
 
@@ -322,8 +334,6 @@ def parse(input_text):
     command = input_text.lower()
     object1 = None
     remaining_words_index = None
-
-    # the .split() function splits the input_text string into a list of individual words
     words = input_text.split()
 
     if len(words) > 0:
@@ -415,17 +425,17 @@ def parse(input_text):
     return command, object1
 
 
-def skill_check(skill):
-    """Roll a d20 and add modifier
-    Return value to compare vs a hardcoded DC"""
-
-
-def roll_dice(num_dice):
-    roll_results = []
-    for _ in range(num_dice):
-        roll = randint(*user.hitDie)
-        roll_results.append(roll)
-        return roll_results
+# def skill_check(skill):
+#     """Roll a d20 and add modifier
+#     Return value to compare vs a hardcoded DC"""
+#
+#
+# def roll_dice(num_dice):
+#     roll_results = []
+#     for _ in range(num_dice):
+#         roll = randint(*user.hitDie)
+#         roll_results.append(roll)
+#         return roll_results
 
 
 def current_inventory():
@@ -443,17 +453,27 @@ def current_inventory():
 def current_equipment():
     """Prints a list of items that you have equipped in your slots."""
     print(f'You are currently wearing:')
-    for item_key, item_value in Equipment.items():  # string, dictionary
-        if item_value is not None:
-            if item_value.itemType == ItemType.Weapon:
-                print(f'{item_key}: {item_value.name} - {item_value.damage1H}\n'
-                      f'    {item_value.description}\n')
-            elif item_value.itemType == ItemType.Armor:
-                print(f'{item_key}: {item_value.name} - AC {item_value.ac}\n'
-                      f'    {item_value.description}\n')
-            elif item_value.itemType == ItemType.Item:
-                print(f'{item_key}: {item_value.name}\n'
-                      f'    {item_value.description}\n')
+    for slot, equipment in Equipment.items():  # string, dictionary
+        if equipment is not None:
+            if slot == "Attunement":
+                continue
+            elif equipment.itemType == ItemType.Weapon:
+                if equipment.versatile:
+                    print(f'{slot}: {equipment.name} - {equipment.versatiledmg}\n'
+                          f'    {equipment.description}\n')
+                    continue
+                elif equipment.damage1H is not None:
+                    print(f'{slot}: {equipment.name} - {equipment.damage1H}\n'
+                          f'    {equipment.description}\n')
+                elif equipment.damage2H is not None:
+                    print(f'{slot}: {equipment.name} - {equipment.damage2H}\n'
+                          f'    {equipment.description}\n')
+            elif equipment.itemType == ItemType.Armor:
+                print(f'{slot}: {equipment.name} - AC {equipment.ac}\n'
+                      f'    {equipment.description}\n')
+            elif equipment.itemType == ItemType.Item:
+                print(f'{slot}: {equipment.name}\n'
+                      f'    {equipment.description}\n')
 
 
 def calc_weight():
