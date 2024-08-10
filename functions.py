@@ -1,9 +1,11 @@
 import time
-
 import player
 from job_list import Barbarian, Cleric, Wizard
 from player import *
 from race_list import Elf, Dwarf, Human
+from pywebio.input import input, FLOAT, TEXT
+from pywebio.output import put_text
+from pywebio.session import run_js
 
 
 def wait():
@@ -18,13 +20,13 @@ def startGame():
         if start in ("2", "Pregen"):
             print("Please be prepared to enter a name, gender, age, race, and class, from those available in the game."
                   "\nIf you are unsure what the options are, please go back and create a new character.")
-            create = input("Do you wish to continue? Y/N\n >> ").lower()
+            create = input("Do you wish to continue? Y/N\n >> ", type=TEXT).lower()
             if create in ("y", "yes"):
-                name = input("Name: ").title()
-                gender = input("Gender: ").title()
-                age = int(input("Age: "))
-                race = input("Race: ").title()
-                job = input("Job: ").title()
+                name = input("Name: ", type=TEXT).title()
+                gender = input("Gender: ", type=TEXT).title()
+                age = int(input("Age: ", type=FLOAT))
+                race = input("Race: ", type=TEXT).title()
+                job = input("Job: ", type=TEXT).title()
                 return name, gender, age, race, job
             elif create in ("n", "no"):
                 start = "1"
@@ -33,14 +35,14 @@ def startGame():
                 # Initialise age
                 age = None
                 # Name
-                name = input(f'\nWhat is your name?\n >> ').title()
+                name = input(f'\nWhat is your name?\n >> ', type=TEXT).title()
                 while len(name) < 2:
-                    name = input(f'Input name was too short. Try again. \nWhat is your name?\n >> ').title()
+                    name = input(f'Input name was too short. Try again. \nWhat is your name?\n >> ', type=TEXT).title()
                 # Gender
                 while True:
                     gender = None
                     gender_select = input("What is your gender?\n"
-                                          "1) Male\n2) Female\n3) Other\n >> ").lower()
+                                          "1) Male\n2) Female\n3) Other\n >> ", type=TEXT).lower()
                     if gender_select not in ("male", "female", "other", "1", "2", "3"):
                         print("Sorry I didn't recognise that gender. Please try again.")
                         continue
@@ -55,21 +57,21 @@ def startGame():
                 while True:
                     # Age
                     try:
-                        age = int(input(f'How old are you?\n >> '))
+                        age = int(input(f'How old are you?\n >> ', type=FLOAT))
                         break
                     except ValueError:
                         print("Sorry I didn't recognise that age. Please type in a whole number.")
                         continue
                 # Double check responses
                 correct = input(f"Hello, {name}. You are a {age} year old {gender}."
-                                f"\nIs this correct? Y/N\n >> ").lower()
+                                f"\nIs this correct? Y/N\n >> ", type=TEXT).lower()
                 if correct in ['y', 'yes']:
                     pass
                 elif correct in ['n', 'no']:
                     continue
                 else:
                     print("Sorry, I didn't catch that.\n")
-                    correct = input(f"You are a {age} year old {gender}. \nIs this correct? Y/N\n >> ").lower()
+                    correct = input(f"You are a {age} year old {gender}. \nIs this correct? Y/N\n >> ", type=TEXT).lower()
                     if correct in ['y', 'yes']:
                         break
                     elif correct in ['n', 'no']:
@@ -79,12 +81,12 @@ def startGame():
             while True:  # Global check to see if Race and Job are correct.
                 # Race
                 while True:
-                    race = input("Please select a race to learn more about it: Elf, Dwarf, or Human.\n >> ").title()
+                    race = input("Please select a race to learn more about it: Elf, Dwarf, or Human.\n >> ", type=TEXT).title()
                     if race not in ("Elf", "Dwarf", "Human", None):
                         race = input("Sorry I didn't recognise that race. "
-                                     "Please select 'Elf', 'Dwarf', or 'Human'.\n >> ").title()
+                                     "Please select 'Elf', 'Dwarf', or 'Human'.\n >> ", type=TEXT).title()
                     elif race is None:
-                        race = input("Please select a race to learn more about it: Elf, Dwarf, or Human.\n >> ").title()
+                        race = input("Please select a race to learn more about it: Elf, Dwarf, or Human.\n >> ", type=TEXT).title()
                         continue
                     else:
                         if race == "Elf":
@@ -94,7 +96,7 @@ def startGame():
                         elif race == "Human":
                             print(Human)
                     print('Would you like to proceed with this race or view another?')
-                    proceed = input(f'1) Proceed\n2) View another race\n >> ').lower()
+                    proceed = input(f'1) Proceed\n2) View another race\n >> ', type=TEXT).lower()
                     if proceed in ('1', 'proceed'):
                         break
                     elif proceed in ('2', 'view', 'view another', 'view another race'):
@@ -103,13 +105,13 @@ def startGame():
                 # Job
                 while True:
                     job = input("Please select a job to learn more about it: Barbarian, Cleric, or Wizard."
-                                "\n >> ").title()
+                                "\n >> ", type=TEXT).title()
                     if job not in ("Barbarian", "Cleric", "Wizard", None):
                         job = input("Sorry I didn't recognise that job. "
-                                    "Please select 'Barbarian', 'Cleric', or 'Wizard'.\n >> ").title()
+                                    "Please select 'Barbarian', 'Cleric', or 'Wizard'.\n >> ", type=TEXT).title()
                     elif job is None:
                         job = input("Please select a job to learn more about it: Barbarian, Cleric, or Wizard."
-                                    "\n >> ").title()
+                                    "\n >> ", type=TEXT).title()
                         continue
                     else:
                         if job == "Barbarian":
@@ -119,7 +121,7 @@ def startGame():
                         elif job == "Wizard":
                             print(Wizard)
                     print('Would you like to proceed with this job or view another?')
-                    proceed = input(f'1) Proceed\n2) View another job\n >> ').lower()
+                    proceed = input(f'1) Proceed\n2) View another job\n >> ', type=TEXT).lower()
                     if proceed in ('1', 'proceed'):
                         break
                     elif proceed in ('2', 'view', 'view another', 'view another job'):
@@ -127,7 +129,7 @@ def startGame():
                         continue
                 while True:
                     # Final check
-                    correct = input(f"{name}, you are a {race} {job}.\nIs this correct? Y/N\n >> ").lower()
+                    correct = input(f"{name}, you are a {race} {job}.\nIs this correct? Y/N\n >> ", type=TEXT).lower()
                     if correct in ['y', 'yes']:
                         break
                     elif correct in ['n', 'no']:
