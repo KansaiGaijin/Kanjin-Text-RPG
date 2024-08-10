@@ -1,10 +1,17 @@
+from pywebio import start_server
 from functions import wait, startGame, query_equip, change_equip, get_instructions, error_message, parse
 from functions import current_inventory, current_equipment
 from player import *
 
 # pyinstaller --onefile --paths=C:\Users\kasai\PycharmProjects\pythonProject\Kanjin\KanjinEngine.py
 
-user = Player(*startGame())
+
+def game_logic():
+    name, gender, age, race, job = startGame()
+    put_text(f"Character Created: {name}, {gender}, {age} years old, {race} {job}")
+
+if __name__ == '__main__':
+    start_server(game_logic, port=8080)
 
 
 class Engine(object):
