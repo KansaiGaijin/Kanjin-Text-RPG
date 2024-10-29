@@ -3,9 +3,6 @@ from functions import wait, startGame, query_equip, change_equip, get_instructio
 from functions import current_inventory, current_equipment
 from player import *
 
-# pyinstaller --onefile --paths=C:\Users\kasai\PycharmProjects\pythonProject\Kanjin\KanjinEngine.py
-
-
 def game_logic():
     name, gender, age, race, job = startGame()
     put_text(f"Character Created: {name}, {gender}, {age} years old, {race} {job}")
