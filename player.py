@@ -1,8 +1,60 @@
-from enum import Enum, auto
+import function_list
 from random import randint
+from enum_list import *
 
-import functions
+class Inventory:
+    def __init__(self):
+        self.items = []
 
+    def add_item(self, item):
+        self.items.append(item)
+        print(f"Added {item.name} to inventory.")
+
+
+    def remove_item(self, item):
+        if item in self.items:
+            self.items.remove(item)
+            print(f"Removed {item.name} from inventory.")
+        else:
+            print("Item not found in inventory.")
+
+    @staticmethod
+    def current_inventory():
+        """Prints a list of items in your backpack that aren't equipped to your person."""
+        print(f'In your rucksack you have:')
+        for item_key, item_value in Inventory.items():  # string, dictionary
+            if item_key not in Equipment.values():
+                values = item_value.values()  # make a variable of all values
+                values_list = list(values)  # turn variable into a list
+                count_value = values_list[0]  # take the first value from list - why?
+                print(f'{item_key.name} x {count_value}\n'
+                      f'    {item_key.description}\n')
+
+    @staticmethod
+    def current_equipment():
+        """Prints a list of items that you have equipped in your slots."""
+        print(f'You are currently wearing:')
+        for slot, equipment in Equipment.items():  # string, dictionary
+            if equipment is not None:
+                if slot == "Attunement":
+                    continue
+                elif equipment.itemType == ItemType.Weapon:
+                    if equipment.versatile:
+                        print(f'{slot}: {equipment.name} - {equipment.versatiledmg}\n'
+                              f'    {equipment.description}\n')
+                        continue
+                    elif equipment.damage1H is not None:
+                        print(f'{slot}: {equipment.name} - {equipment.damage1H}\n'
+                              f'    {equipment.description}\n')
+                    elif equipment.damage2H is not None:
+                        print(f'{slot}: {equipment.name} - {equipment.damage2H}\n'
+                              f'    {equipment.description}\n')
+                elif equipment.itemType == ItemType.Armor:
+                    print(f'{slot}: {equipment.name} - AC {equipment.ac}\n'
+                          f'    {equipment.description}\n')
+                elif equipment.itemType == ItemType.Item:
+                    print(f'{slot}: {equipment.name}\n'
+                          f'    {equipment.description}\n')
 
 class Player:
     """Character Creation"""
@@ -15,6 +67,11 @@ class Player:
         self.age = age
         self.race = race
         self.job = job
+        # Defence
+        self.ac = 0
+        self.elemental_resistance = {DamageType.Fire: False, DamageType.Water: False, DamageType.Lightning: False}
+        self.physical_resistance = {DamageType.Slashing: False, DamageType.Crushing: False, DamageType.Piercing: False}
+
         # Health (move off Player, keep on Job)
         # self.hitDie = self.job.hd
         # self.currentHP = 100
@@ -23,16 +80,14 @@ class Player:
         self.level = 1
         self.exp = 0
         self.maxEXP = 100
+
         # Magic (Not ready yet)
         # self.spells_known = []
         # self.spells_ready = []
         # Equipment
         self.weapon = rock
         self.armor = tornRags
-        # Defence
-        self.ac = 0
-        self.elemental_resistance = {DamageType.Fire: False, DamageType.Water: False, DamageType.Lightning: False}
-        self.physical_resistance = {DamageType.Slashing: False, DamageType.Crushing: False, DamageType.Piercing: False}
+
         # Ability Scores
         self.stats = {"Strength": 0,
                       "Dexterity": 0,
@@ -48,23 +103,7 @@ class Player:
                      "Wisdom": 0,
                      "Charisma": 0}
         # Held items
-        self.inventory = {rock: {"Count": 1,
-                                 "object": Weapon,
-                                 "equipped": True
-                                 },
-                          paper: {"Count": 1,
-                                  "object": Weapon,
-                                  "equipped": False
-                                  },
-                          tornRags: {"Count": 1,
-                                     "object": Armor,
-                                     "equipped": True
-                                     },
-                          GP1: {"Count": 10,
-                                "object": Money,
-                                "equipped": False
-                                },
-                          }
+        self.inventory = Inventory
 
     def getModifier(self):
         """Floor calculation to work out skill check modifiers"""
@@ -282,9 +321,9 @@ class Player:
         self.getModifier()
         self.current_stats()
         print(' ')
-        functions.current_equipment()
+        function_list.current_equipment()
         print(' ')
-        functions.current_inventory()
+        function_list.current_inventory()
         print(' ')
 
     def health_check(self):
@@ -371,57 +410,15 @@ class Player:
                 else:
                     continue
 
-
-class DamageType(Enum):
-    Slashing = auto()
-    Crushing = auto()
-    Piercing = auto()
-    Fire = auto()
-    Water = auto()
-    Lightning = auto()
-
-
-class DamageMod(Enum):
-    Strength = auto()
-    Dexterity = auto()
-    Constitution = auto()
-    Intelligence = auto()
-    Wisdom = auto()
-    Charisma = auto()
-
-
-class ItemType(Enum):
-    Armor = auto()
-    Weapon = auto()
-    Money = auto()
-    Item = auto()
-
-
-class Slots(Enum):
-    MainHand = auto()
-    OffHand = auto()
-    TwoHanded = auto()
-    Helm = auto()
-    Chest = auto()
-    Wrists = auto()
-    Feet = auto()
-    Neck = auto()
-    Cloak = auto()
-    LeftRing = auto()
-    RightRing = auto()
-    Other = auto()
-    Attunement = auto()
-
-
 class Item:
     """The base class for all items"""
 
-    def __init__(self, name, description, value, magical, ItemType, attunement):
+    def __init__(self, name, description, value, magical, itemType, attunement):
         self.name = name
         self.description = description
         self.value = value
         self.magical = magical
-        self.itemType = ItemType
+        self.itemType = itemType
         self.attunement = attunement
 
     def __repr__(self):
