@@ -4,39 +4,53 @@ from enum_list import *
 
 class Inventory:
     def __init__(self):
-        self.items = []
+        # Changed to a dictionary to store item objects as keys and their data (count, equipped, etc.) as values
+        self.items = {}
 
-    def add_item(self, item):
-        self.items.append(item)
-        print(f"Added {item.name} to inventory.")
-
-
-    def remove_item(self, item):
+    def add_item(self, item, count=1):
         if item in self.items:
-            self.items.remove(item)
-            print(f"Removed {item.name} from inventory.")
+            self.items[item]["Count"] += count
+            print(f"Added {count} more {item.name}. Total: {self.items[item]['Count']}.")
         else:
-            print("Item not found in inventory.")
+            self.items[item] = {"Count": count, "object": item.itemType, "equipped": False}
+            print(f"Added {count} {item.name} to inventory.")
 
-    @staticmethod
-    def current_inventory():
+    def remove_item(self, item, count=1):
+        if item in self.items:
+            if self.items[item]["Count"] <= count:
+                print(f"Removed all {self.items[item]['Count']} {item.name} from inventory.")
+                del self.items[item]
+            else:
+                self.items[item]["Count"] -= count
+                print(f"Removed {count} {item.name} from inventory. Remaining: {self.items[item]['Count']}.")
+        else:
+            print(f"{item.name} not found in inventory.")
+
+    def current_inventory(self):
         """Prints a list of items in your backpack that aren't equipped to your person."""
         print(f'In your rucksack you have:')
-        for item_key, item_value in Inventory.items():  # string, dictionary
-            if item_key not in Equipment.values():
-                values = item_value.values()  # make a variable of all values
-                values_list = list(values)  # turn variable into a list
-                count_value = values_list[0]  # take the first value from list - why?
-                print(f'{item_key.name} x {count_value}\n'
-                      f'    {item_key.description}\n')
+        if not self.items:
+            print("    Your rucksack is empty.")
+            return
+
+        for item_obj, item_data in self.items.items():
+            # Assuming 'equipped' is a key in item_data and Equipment.inventory holds equipped items
+            # This logic needs careful alignment with how you manage equipped items.
+            # For now, it checks if the item object itself is in any of the equipped slots.
+            if not item_data["equipped"] and item_obj not in Equipment.inventory.values():
+                count = item_data["Count"]
+                print(f'{item_obj.name} x {count}\n'
+                      f'    {item_obj.description}\n')
 
     @staticmethod
     def current_equipment():
         """Prints a list of items that you have equipped in your slots."""
         print(f'You are currently wearing:')
-        for slot, equipment in Equipment.items():  # string, dictionary
+        equipment_found = False
+        for slot, equipment in Equipment.inventory.items():
             if equipment is not None:
-                if slot == "Attunement":
+                equipment_found = True
+                if slot == "Attunement1" or slot == "Attunement2" or slot == "Attunement3": # Assuming these are not to be printed
                     continue
                 elif equipment.itemType == ItemType.Weapon:
                     if equipment.versatile:
@@ -55,6 +69,8 @@ class Inventory:
                 elif equipment.itemType == ItemType.Item:
                     print(f'{slot}: {equipment.name}\n'
                           f'    {equipment.description}\n')
+        if not equipment_found:
+            print("    Nothing equipped.")
 
 class Player:
     """Character Creation"""
@@ -67,15 +83,12 @@ class Player:
         self.age = age
         self.race = race
         self.job = job
+
         # Defence
         self.ac = 0
         self.elemental_resistance = {DamageType.Fire: False, DamageType.Water: False, DamageType.Lightning: False}
         self.physical_resistance = {DamageType.Slashing: False, DamageType.Crushing: False, DamageType.Piercing: False}
 
-        # Health (move off Player, keep on Job)
-        # self.hitDie = self.job.hd
-        # self.currentHP = 100
-        # self.maxHP = 100
         # Levels
         self.level = 1
         self.exp = 0
@@ -84,9 +97,19 @@ class Player:
         # Magic (Not ready yet)
         # self.spells_known = []
         # self.spells_ready = []
+
         # Equipment
+        # Held items
+        self.inventory = Inventory()
         self.weapon = rock
         self.armor = tornRags
+
+        # Example of adding starting items to inventory
+        self.inventory.add_item(rock, 1)
+        self.inventory.add_item(tornRags, 1)
+        # Assuming you want to auto-equip these initially
+        self.equip_item(rock, "Main Hand")
+        self.equip_item(tornRags, "Chest")
 
         # Ability Scores
         self.stats = {"Strength": 0,
@@ -102,8 +125,7 @@ class Player:
                      "Intelligence": 0,
                      "Wisdom": 0,
                      "Charisma": 0}
-        # Held items
-        self.inventory = Inventory
+
 
     def getModifier(self):
         """Floor calculation to work out skill check modifiers"""
@@ -229,89 +251,110 @@ class Player:
               f"\n{self.weapon.name}\n"
               f"    {self.weapon.description}")
 
-    def drop_item(self, object1):
-        x = None
-        for list_key, list_value in self.inventory.items():  # string, dictionary
-            if object1 in list_key.name.lower():  # if user input is in the inventory list
-                x = self.inventory.copy()
-                del x[list_key]
-                print("Did I drop it?")
-        return x
+    def drop_item(self, item_name):
+        # Find the item object by name
+        item_to_drop = None
+        for item_obj in self.inventory.items:
+            if item_obj.name.lower() == item_name.lower():
+                item_to_drop = item_obj
+                break
 
-    # Add the inventory commands to parser // take off Player
+        if item_to_drop:
+            self.inventory.remove_item(item_to_drop, count=1) # Remove one by default
+        else:
+            print(f"You don't have '{item_name}' in your inventory.")
 
-    def update_inventory(self, x):
-        self.inventory = x
-
-    def loot_object(self, object1):
-        for scene, room in Map.scenes.items():  # iterate map scenes
-            if Engine.seed == scene:  # set new Engine seed in each room.enter()
-                for list_key, list_value in room.lootable_items.items():  # string, dictionary
-                    for var, count in list_value.items():  # variable/object, integer
-                        if object1 in list_key:  # if user input is in the lootable items
-
-                            if var in self.inventory:  # if object is in inventory
-                                self.inventory[var]["Count"] += count  # increase item count
-                                print(f'{var.name} x {count} has been added to your existing stack.')
-
-                            elif var not in self.inventory[var]:  # if variable not in inventory
-                                self.inventory[var] = {"Count": count,  # add it in
-                                                       "object": var.type,
-                                                       "equipped": False}
-                                print(f'{var.name} x {count} has been added to your rucksack.')
-
-                        room.lootable_items[object1][var] = 0  # set item to 0
+    def loot_object(self, object_name):
+        # This method assumes a specific structure for Map.scenes and lootable_items
+        for scene_name, room_data in Map.scenes.items():
+            if Engine.seed == scene_name:
+                found_item = False
+                for item_key_str, item_value_dict in room_data.get("lootable_items", {}).items():
+                    # item_value_dict is like {Item_obj: count}
+                    for item_obj, count in item_value_dict.items():
+                        if object_name.lower() in item_obj.name.lower():
+                            if count > 0:
+                                self.inventory.add_item(item_obj, count)
+                                room_data["lootable_items"][item_key_str][item_obj] = 0 # Set count to 0 in room
+                                found_item = True
+                                break
+                    if found_item:
                         break
-                    else:
-                        print("You don't see one of those to loot.")
-                        break
+                if not found_item:
+                    print("You don't see one of those to loot.")
+                return # Exit after checking the current room
 
-    def add_inventory(self, object1):
-        for scene, room in Map.scenes.items():  # iterate map scenes
-            if Engine.seed == scene:  # set new Engine seed in each room.enter()
-                for list_key, list_value in room.available_items.items():  # string, dictionary
-                    for var, count in list_value.items():  # variable/object, integer
-                        if object1 in list_key:  # if user input is in the available items
+    def add_inventory(self, object_name):
+        # This method assumes a specific structure for Map.scenes and available_items
+        for scene_name, room_data in Map.scenes.items():
+            if Engine.seed == scene_name:
+                found_item = False
+                for item_key_str, item_value_dict in room_data.get("available_items", {}).items():
+                    # item_value_dict is like {Item_obj: count}
+                    for item_obj, count_available in item_value_dict.items():
+                        if object_name.lower() in item_obj.name.lower():
+                            if count_available == 0:
+                                print(f"There are no {item_obj.name} left here.")
+                                found_item = True
+                                break
 
-                            response = input(f'There are {room.available_items[object1][var]}.\n'
-                                             f'How many will you take?\n>> ').lower()
-                            if response in ("0", "none"):
+                            response = input(f'There are {count_available} {item_obj.name} available.\n'
+                                             f'How many will you take? (enter "all" or a number)\n>> ').lower()
+
+                            if response == "0" or response == "none":
+                                print("You decide not to take any.")
+                                found_item = True
                                 break
                             elif response == "all":
-                                if var in self.inventory:
-                                    self.inventory[var]["Count"] += count  # increase item count
-                                    print(f'{var.name} x {count} has been added to your existing stack.')
-                                    room.available_items[object1][var] = 0
-
-                                elif var not in self.inventory:  # if objects not in inventory
-                                    self.inventory[var] = {"Count": count,  # add it in
-                                                           "object": var.type,
-                                                           "equipped": False}
-                                    print(f'{var.name} x {count} has been added to your rucksack.')
-                                    room.available_items[object1][var] = 0
-
-                            elif int(response) <= count:
-                                if var in self.inventory:
-                                    self.inventory[var]["Count"] += int(response)  # increase item count
-                                    print(f'{var.name} x {response} has been added to your existing stack.')
-                                    room.available_items[object1][var] = \
-                                        room.available_items[object1][var] - int(response)
-
-                                elif var not in self.inventory:  # if objects not in inventory
-                                    self.inventory[var] = {"Count": response,  # add it in
-                                                           "object": var.type,
-                                                           "equipped": False}
-                                    print(f'{var.name} x {response} has been added to your rucksack.')
-                                    room.available_items[object1][var] = \
-                                        room.available_items[object1][var] - int(response)
-
+                                self.inventory.add_item(item_obj, count_available)
+                                room_data["available_items"][item_key_str][item_obj] = 0
+                                found_item = True
+                                break
+                            elif response.isdigit():
+                                num_to_take = int(response)
+                                if num_to_take <= count_available:
+                                    self.inventory.add_item(item_obj, num_to_take)
+                                    room_data["available_items"][item_key_str][item_obj] -= num_to_take
+                                    found_item = True
+                                    break
+                                else:
+                                    print("You can't take more than exist.")
+                                    found_item = True
+                                    break
                             else:
-                                print("You can't take more than exist.")
+                                print("Invalid input. Please enter 'all' or a number.")
+                                found_item = True
+                                break
+                    if found_item:
+                        break
+                if not found_item:
+                    print("You don't see any lying around.")
+                return  # Exit after checking the current room
 
-                        break
-                    else:
-                        print("You don't see any lying around..")
-                        break
+    def equip_item(self, item_obj, slot):
+        """Equips an item to a specific slot."""
+        if item_obj in self.inventory.items and self.inventory.items[item_obj]["Count"] > 0:
+            # Unequip existing item in that slot if any
+            if Equipment.inventory[slot] is not None:
+                unequipped_item = Equipment.inventory[slot]
+                print(f"Unequipping {unequipped_item.name} from {slot}.")
+                self.inventory.items[unequipped_item]["equipped"] = False  # Mark as unequipped in inventory
+
+            Equipment.inventory[slot] = item_obj
+            self.inventory.items[item_obj]["equipped"] = True
+            print(f"Equipped {item_obj.name} to {slot}.")
+        else:
+            print(f"You don't have {item_obj.name} to equip.")
+
+    def unequip_item(self, slot):
+        """Unequips an item from a specific slot."""
+        if Equipment.inventory[slot] is not None:
+            unequipped_item = Equipment.inventory[slot]
+            self.inventory.items[unequipped_item]["equipped"] = False
+            Equipment.inventory[slot] = None
+            print(f"Unequipped {unequipped_item.name} from {slot}.")
+        else:
+            print(f"Nothing is equipped in {slot}.")
 
     def new_char(self):
         """Outputs final stats, armour, and inventory"""
@@ -321,9 +364,9 @@ class Player:
         self.getModifier()
         self.current_stats()
         print(' ')
-        function_list.current_equipment()
+        Inventory.current_equipment()  # Call the static method of Inventory
         print(' ')
-        function_list.current_inventory()
+        self.inventory.current_inventory()  # Call the instance method of Player's inventory
         print(' ')
 
     def health_check(self):
@@ -347,6 +390,9 @@ class Player:
                 # roll 4d6
                 for roll in range(4):
                     r = randint(1, 6)
+                    # This rolling logic (if r < 6: r = randint(1, 6)) seems to aim for higher rolls.
+                    # Standard D&D 4d6 drop lowest usually means you just roll 4 and drop the lowest.
+                    # I'll keep your original logic but note it's non-standard.
                     if r < 6:
                         r = randint(1, 6)
                     rolls.append(r)
@@ -363,26 +409,36 @@ class Player:
                   f"Your attributes are:\n {', '.join(attributes)}\n")
 
             # Allocate
-            while len(stats) != 0:
+            current_attributes = list(attributes)  # Make a copy to modify
+            current_stats_to_assign = list(stats)  # Make a copy
+
+            while len(current_stats_to_assign) != 0:
                 input_text = input(">> ").title()
                 words = input_text.split()
-                if len(words) <= 2:
-                    if words[0] in stats and words[1] in attributes:
-                        self.stats[words[1]] += int(words[0])
-                        stats.remove(words[0])
-                        attributes.remove(words[1])
-                        if len(stats) == 1:
-                            self.stats[attributes[0]] += int(stats[0])
-                            print("")
-                            break
-                        print(f"The remaining stats are:\n {', '.join(stats)}\n\n"
-                              f"The remaining attributes are:\n {', '.join(attributes)}")
-                    else:
-                        print("Error. Input was not recognised. Please try again with 'Number' + 'Attribute'.")
-                        continue
+                if len(words) == 2:
+                    try:
+                        chosen_stat_str = words[0]
+                        chosen_attribute = words[1]
+
+                        if chosen_stat_str in current_stats_to_assign and chosen_attribute in current_attributes:
+                            self.stats[chosen_attribute] += int(chosen_stat_str)
+                            current_stats_to_assign.remove(chosen_stat_str)
+                            current_attributes.remove(chosen_attribute)
+                            if len(current_stats_to_assign) == 1:
+                                self.stats[current_attributes[0]] += int(current_stats_to_assign[0])
+                                print("")
+                                break
+                            print(f"The remaining stats are:\n {', '.join(current_stats_to_assign)}\n\n"
+                                  f"The remaining attributes are:\n {', '.join(current_attributes)}")
+                        else:
+                            print(
+                                "Error. Either the number or attribute was not available/recognised. Please try again with 'Number' + 'Attribute'.")
+                    except ValueError:
+                        print("Error. Invalid number format. Please try again with 'Number' + 'Attribute'.")
+                    except KeyError:
+                        print("Error. Attribute not recognized. Please try again with 'Number' + 'Attribute'.")
                 else:
                     print("Error. Input was not recognised. Please try again with 'Number' + 'Attribute'.")
-                    continue
 
             print(f"Your current stats are:\n"
                   f'Strength: {self.stats["Strength"]}\n'
@@ -396,19 +452,15 @@ class Player:
                            "WARNING: If you select 'N', your dice will be randomly rolled again. Proceed?\n"
                            " >> ").lower()
             if select == "n":
+                # Reset stats for re-allocation
+                self.stats = {"Strength": 0, "Dexterity": 0, "Constitution": 0, "Intelligence": 0, "Wisdom": 0,
+                              "Charisma": 0}
                 continue
-            if select == 'y':
+            elif select == 'y':
                 break
-
-            elif select not in ("y", "n"):
+            else:
                 print("Error. Input was not recognised. Please select 'Y' or 'N'.")
-                select = input("Are you happy with this selection? Y/N?\n"
-                               "WARNING: If you select 'N', your dice will be randomly rolled again. Proceed?\n"
-                               " >> ").lower()
-                if select == "y":
-                    break
-                else:
-                    continue
+                # Loop back to ask again or handle as desired
 
 class Item:
     """The base class for all items"""
