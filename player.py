@@ -94,10 +94,6 @@ class Player:
         self.exp = 0
         self.maxEXP = 100
 
-        # Magic (Not ready yet)
-        # self.spells_known = []
-        # self.spells_ready = []
-
         # Equipment
         # Held items
         self.inventory = Inventory()
