@@ -3,6 +3,7 @@ import sys
 sys.path.append('.')
 
 from player import Item, Weapon, Armor, rock, dagger, polearm, tornRags, paper, GP1, SP1, CP1
+from enum_list import *
 
 class Scene:
     """
@@ -89,6 +90,32 @@ class Scene:
 
 
 # --- Default Scenes ---
+# Scene 0: Tutorial
+tutorial = Scene(
+    name="Tutorial",
+    description="Welcome to Kanjin Text RPG!"
+                "This is a very simple tutorial to show you the basics of issuing commands.\n"
+                "You can return at anytime where you are asked 'What do you want to do?' by typing 'Enter tutorial'.\n"
+                "Important commands you'll want to know can be found by typing 'Help'.\n\n"
+                "These are the available commands:\n"
+                "Help - Prints this help message.\n"
+                "Check inventory | bag | backpack - Lists items you are carrying.\n"
+                "    Can also just enter 'inventory | bag | backpack\n" 
+                "Check equipment | equipped | items - Lists items you have equipped\n"
+                "    Can also just enter 'equipment | equipped | items\n" 
+                "Check stats or Check hitpoints | hp | health - Shows your stat block or current health details\n"
+                "    Can also just enter 'stats | health | hitpoints | hp\n" 
+                "Go *direction* - Each scene will give you available directions i.e North\n"
+                "Enter cave | house | room - maybe... TBC\n"
+                "Scene or Location - Replays the current area's details\n"
+                "Look around - lists the available items in your scene without displaying the scene description.\n"
+                "Examine | Open | Loot *object* - Provides details of an item, opens a container, or takes an object.\n"
+)
+tutorial.add_available_item(rock, 1)
+tutorial.add_available_item(paper, 2)
+tutorial.add_lootable_item("suspicious tree trunk", Item("Test Item",
+                                                         "This is for testing purposes", None,
+                                                         False, ItemType.Item, False), 1)
 
 # Scene 1: Starting Clearing
 starting_clearing = Scene(
@@ -138,5 +165,6 @@ Map = {
     "Starting Clearing": starting_clearing,
     "Forest Path": forest_path,
     "Dark Cave Entrance": dark_cave_entrance,
+    "Tutorial": tutorial,
 }
 
