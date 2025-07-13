@@ -16,8 +16,7 @@ def startGame():
     # Loop for initial choice: Create or Pre-generated
     while True:
         start = input("Would you like to create your own character or use pre-generated stats?"
-                      "\n 1) Create a new character\n 2) Pre-generated\n >> ")
-
+                      "\n 1) Create a new character\n 2) Quick Setup\n 3) Pre-Gen Character\n >> ")
         if start in ("1", "Create"):
             # --- Character Basic Info (Name, Gender, Age) ---
             name, gender, age = None, None, None # Initialize
@@ -134,7 +133,7 @@ def startGame():
                         break # Break out of this inner loop to restart the outer race/job loop
                     correct = input(f"\n{name}, you are a {race.name_adjective} {job.name}.\nIs this correct? Y/N\n >> ")
                     if correct.lower() in ['y', 'yes']:
-                        return name, gender, age, race, job # All confirmed, return values
+                        return name, gender, age, race, job, None# All confirmed, return values
                     elif correct.lower() in ['n', 'no']:
                         # If not correct, break this loop to re-enter race/job selection
                         break
@@ -142,13 +141,13 @@ def startGame():
                         print("Sorry, I didn't catch that. Please try again.\n")
                         continue
 
-        elif start in ("2", "pre-generated"):
+        elif start in ("2", "Quick Setup"):
             print("Please be prepared to enter a name, gender, age, race, and class, from those available in the game."
                   "\nIf you are unsure what the options are, please go back and create a new character.")
             create = input("Do you wish to continue? Y/N\n >> ").lower()
             if create in ("y", "yes"):
                 name = input("Name: ")
-                gender = input("Gender: ")
+                gender = input("Gender (Male, Female, Other): ")
                 age = int(input("Age: "))
                 race_str = input("Race (Elf, Dwarf, Human): ")
                 job_str = input("Job (Barbarian, Cleric, Wizard): ")
@@ -161,29 +160,43 @@ def startGame():
                 actual_job = job_map.get(job_str.lower())
 
                 if actual_race and actual_job:
-                    return name, gender, age, actual_race, actual_job
+                    return name, gender, age, actual_race, actual_job, None
                 else:
                     print("Invalid race or job entered for pre-generated character. Please try again.")
-                    # Force restart to character creation choice by setting 'start' to '1'
-                    # and then continue the outermost loop.
                     start = "1"
                     continue
             elif create in ("n", "no"):
                 # If 'n', re-prompt the initial choice.
                 start = input("Would you like to create your own character or use pre-generated stats?"
-                              "\n 1) Create a new character\n 2) Pre-generated\n >> ")
+                              "\n 1) Create a new character\n 2) Quick Setup\n 3) Pre-Gen Character\n >> ")
                 continue
             else:
                 print("Invalid input. Please enter Y or N.")
                 # If invalid, re-prompt the initial choice.
                 start = input("Would you like to create your own character or use pre-generated stats?"
-                              "\n 1) Create a new character\n 2) Pre-generated\n >> ")
+                              "\n 1) Create a new character\n 2) Quick Setup\n 3) Pre-Gen Character\n >> ")
                 continue
+        elif start in ("3", "Pre-generated Character"):
+            print("You have chosen a pre-generated character.")
+            # Define pre-generated character details
+            name = "Elias"
+            gender = "Male"
+            age = 30
+            race = Human  # Direct reference to the object
+            job = Barbarian  # Direct reference to the object
+            pre_allocated_stats = {
+                "Strength": 15,
+                "Dexterity": 14,
+                "Constitution": 13,
+                "Intelligence": 12,
+                "Wisdom": 10,
+                "Charisma": 8
+            }
+            print(f"\nPre-generated Character: {name}, a {age} year old {race.name_adjective} {job.name}.")
+            return name, gender, age, race, job, pre_allocated_stats
+
         else:
-            print("Invalid input. Please select '1' or '2'.")
-            # Re-prompt the initial choice.
-            start = input("Would you like to create your own character or use pre-generated stats?"
-                          "\n 1) Create a new character\n 2) Pre-generated\n >> ")
+            print("Invalid input. Please select '1', '2', or '3'.\n.")
             continue
 
 def query_equip(player: Player):
@@ -255,7 +268,7 @@ def change_equip(player: Player):
             itemlist = [item_obj for item_obj, item_data in player.inventory.items.items()
                         if item_data["object"] == ItemType.Armor and
                         item_obj not in [player.inventory.equipped_items[Slots.Helm],
-                                         player.inventory.equipped_items[Slots.Chest],
+                                         player.inventory.equipped_items[Slots.Armor],
                                          player.inventory.equipped_items[Slots.Wrists],
                                          player.inventory.equipped_items[Slots.Feet]]]
             itemlist.append("Return")
@@ -280,8 +293,8 @@ def change_equip(player: Player):
                             # Logic for equipping armor based on its intended slot
                             if chosen_item.slot == Slots.Helm:
                                 player.inventory.equip_item(chosen_item, Slots.Helm)
-                            elif chosen_item.slot == Slots.Chest:
-                                player.inventory.equip_item(chosen_item, Slots.Chest)
+                            elif chosen_item.slot == Slots.Armor:
+                                player.inventory.equip_item(chosen_item, Slots.Armor)
                             elif chosen_item.slot == Slots.Wrists:
                                 player.inventory.equip_item(chosen_item, Slots.Wrists)
                             elif chosen_item.slot == Slots.Feet:
@@ -347,14 +360,14 @@ def change_equip(player: Player):
 
 
 def get_instructions():
-    descrip1 = ("There are certain commands that will be available almost anytime you are able to type,\n"
+    descrip1 = ("There are certain commands that will be available almost anytime you are able to type\n"
                 "such as viewing your inventory, checking your equipped items, and also changing them.\n"
                 "You can also view your stats including your current and max hp.\n")
     descrip2 = ("Some examples are: 'Check inventory', 'Check equipment', and 'View stats'.\n"
-                "To travel to a new area, just type 'Go north' or 'enter cave' etc.\n"
-                "To replay the description of the current area, type 'location'.")
+                "To travel to a new area, just type 'Go north' or 'Enter cave' etc.\n"
+                "To replay the description of the current area, type 'Location', or 'Scene'.")
     print(descrip1)
-    time.sleep(1) # Reduced sleep for faster testing
+    time.sleep(3) # Reduced sleep for faster testing
     print(descrip2)
 
 
@@ -376,7 +389,7 @@ def parse(input_text):
         if words[0] == "check" and words[1] in ("inventory", "bag", "backpack"):
             command = "inventory"
             return command, object1
-        elif words[0] == "check" and words[1] in ("equipment", "equip", "items"):
+        elif words[0] == "check" and words[1] in ("equipment", "equipped", "items"):
             command = "equipment"
             return command, object1
         elif words[0] == "check" and words[1] == "stats":
@@ -385,7 +398,7 @@ def parse(input_text):
         elif words[0] == "check" and words[1] in ("hp", "hitpoints", "health"):
             command = "hp"
             return command, object1
-        elif words[0] == "go":
+        elif words[0] in ("go", "enter"):
             command = "go"
             object1 = " ".join(words[1:]) # The rest of the words are the direction
             return command, object1
@@ -393,15 +406,19 @@ def parse(input_text):
             command = "take"
             object1 = " ".join(words[2:])
             return command, object1
+        elif words[0] == "look" and words[1] == "around" and len(words) > 2:
+            command = "look"
+            object1 = " ".join(words[2:])
+            return command, object1
 
     # Single-word commands
     if words[0] == "help":
         command = "help"
-    elif words[0] == "scene" or words[0] == "location": # Added 'location' as an alias
+    elif words[0] in ("scene", "location"):
         command = "scene"
     elif words[0] in ("inventory", "bag", "backpack"):
         command = "inventory"
-    elif words[0] in ("equip", "equipment"):
+    elif words[0] in ("equipped", "equipment"):
         command = "equipment"
     elif words[0] == "stats":
         command = "stats"
@@ -428,6 +445,13 @@ def parse(input_text):
         else:
             command = "loot" # User needs to specify what to loot
             object1 = None
+    elif words[0] == "open":
+        if len(words) > 1:
+            command = "open"
+            object1 = " ".join(words[1:])
+        else:
+            command = "open" # User needs to specify what to open
+            object1 = None
     elif words[0] == "drop":
         if len(words) > 1:
             command = "drop"
@@ -435,6 +459,7 @@ def parse(input_text):
         else:
             command = "drop" # User needs to specify what to drop
             object1 = None
+
     elif words[0] == "quit":
         command = "quit"
     else:
