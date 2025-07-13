@@ -296,7 +296,7 @@ def main_game_loop():
             get_instructions()
         elif command == "scene":
             game_engine.display_current_scene()
-        elif command == "look":
+        elif command == "look_around":
             game_engine.look_around()
         elif command == "inventory":
             game_engine.player.inventory.current_inventory()

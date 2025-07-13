@@ -406,9 +406,8 @@ def parse(input_text):
             command = "take"
             object1 = " ".join(words[2:])
             return command, object1
-        elif words[0] == "look" and words[1] == "around" and len(words) > 2:
-            command = "look"
-            object1 = " ".join(words[2:])
+        elif words[0] == "look" and words[1] == "around" and len(words) == 2:
+            command = "look_around"
             return command, object1
 
     # Single-word commands
