@@ -247,25 +247,8 @@ def main_game_loop():
     # Character Creation
     name, gender, age, race, job = startGame()
 
-    # Instantiate Race and Job objects based on user's choice
-    selected_race = None
-    if race == "Elf":
-        selected_race = Elf
-    elif race == "Dwarf":
-        selected_race = Dwarf
-    elif race == "Human":
-        selected_race = Human
-
-    selected_job = None
-    if job == "Barbarian":
-        selected_job = Barbarian
-    elif job == "Cleric":
-        selected_job = Cleric
-    elif job == "Wizard":
-        selected_job = Wizard
-
     # Create player instance
-    player = Player(name, gender, age, selected_race, selected_job)
+    player = Player(name, gender, age, race, job)
     game_engine.set_player(player) # Set the player in the game engine
 
     # Display initial character summary

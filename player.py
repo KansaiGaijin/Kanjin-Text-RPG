@@ -141,14 +141,16 @@ class Inventory:
                             .replace('RightRing', 'Right Ring'))
         return str(slot_val)  # Fallback for unexpected types
 
-    def add_item(self, item, count=1):
+    def add_item(self, item, count=1, silent=False):
         """Adds an item to the inventory."""
         if item in self.items:
             self.items[item]["Count"] += count
-            print(f"Added {count} more {item.name}. Total: {self.items[item]['Count']}.")
+            if not silent:
+                print(f"Added {count} more {item.name}. Total: {self.items[item]['Count']}.")
         else:
             self.items[item] = {"Count": count, "object": item.itemType}
-            print(f"Added {count} {item.name} to inventory.")
+            if not silent:
+                print(f"Added {count} {item.name} to inventory.")
 
     def remove_item(self, item, count=1):
         """Removes an item from the inventory."""
@@ -168,7 +170,7 @@ class Inventory:
 
     def current_inventory(self):
         """Prints a list of items in your backpack that aren't equipped to your person."""
-        print(f'In your rucksack you have:')
+        print(f'You are currently carrying:')
         found_un_equipped = False
         for item_obj, item_data in self.items.items():
             # Check if the item is in the backpack AND not currently equipped in any slot
@@ -182,7 +184,7 @@ class Inventory:
 
     def current_equipment(self):
         """Prints a list of items that you have equipped in your slots."""
-        print(f'You are currently wearing:')
+        print(f'You have equipped:')
         equipment_found = False
         for slot, equipment in self.equipped_items.items():
             if equipment is not None and slot != Slots.Attunement: # Don't print the attunement counter
@@ -209,73 +211,80 @@ class Inventory:
         print(f"Attunement slots used: {self.equipped_items[Slots.Attunement]}/3")
 
 
-    def equip_item(self, item_obj, slot: Slots):
+    def equip_item(self, item_obj, slot: Slots, silent=False):
         """Equips an item to a specific slot."""
         if item_obj not in self.items or self.items[item_obj]["Count"] == 0:
-            print(f"You don't have {item_obj.name} to equip.")
+            if not silent:
+                print(f"You don't have {item_obj.name} to equip.")
             return
 
         # Check attunement limits before equipping (moved up for early exit)
         if item_obj.attunement and self.equipped_items[Slots.Attunement] >= 3:
-            print(f"You cannot equip {item_obj.name}. You have reached your attunement limit (3/3).")
+            if not silent:
+                print(f"You cannot equip {item_obj.name}. You have reached your attunement limit (3/3).")
             return
 
         # Handle unequipping existing item in the target slot first
         if self.equipped_items[slot] is not None:
-            self.unequip_item(slot)
+            self.unequip_item(slot) # This will print its own unequip message
 
         # Now, handle equipping based on item type and specific properties
         if item_obj.itemType == ItemType.Weapon:
             if item_obj.slot == Slots.TwoHanded:
                 # If equipping a two-handed weapon, unequip anything in main/off-hand
                 if self.equipped_items[Slots.MainHand] is not None:
-                    self.unequip_item(Slots.MainHand)
+                    self.unequip_item(Slots.MainHand, silent=True) # Silent unequip
                 if self.equipped_items[Slots.OffHand] is not None:
-                    self.unequip_item(Slots.OffHand)
+                    self.unequip_item(Slots.OffHand, silent=True) # Silent unequip
                 self.equipped_items[Slots.TwoHanded] = item_obj
-                print(f"Equipped {item_obj.name} to {self._get_slot_display_name(Slots.TwoHanded)}.")
+                if not silent:
+                    print(f"Equipped {item_obj.name} to {self._get_slot_display_name(Slots.TwoHanded)}.")
             elif item_obj.versatile:
                 # If equipping a versatile weapon, it goes in MainHand, and potentially affects OffHand
                 if self.equipped_items[Slots.TwoHanded] is not None:
-                    self.unequip_item(Slots.TwoHanded) # Unequip two-handed if present
+                    self.unequip_item(Slots.TwoHanded, silent=True) # Unequip two-handed if present silently
                 self.equipped_items[Slots.MainHand] = item_obj
-                # A versatile weapon can be used two-handed, implying it might occupy the off-hand conceptually
-                # For simplicity, we'll just equip it to MainHand here. If you want it to occupy off-hand,
-                # you'd need more complex logic for 1H vs 2H use.
-                print(f"Equipped {item_obj.name} to {self._get_slot_display_name(Slots.MainHand)}.")
+                if not silent:
+                    print(f"Equipped {item_obj.name} to {self._get_slot_display_name(Slots.MainHand)}.")
             else: # Standard one-handed weapon (or other weapon types not specifically handled above)
                 self.equipped_items[slot] = item_obj # Equip to the specified slot (MainHand or OffHand)
-                print(f"Equipped {item_obj.name} to {self._get_slot_display_name(slot)}.")
+                if not silent:
+                    print(f"Equipped {item_obj.name} to {self._get_slot_display_name(slot)}.")
         elif item_obj.itemType == ItemType.Armor:
             # For armor, ensure the target slot is appropriate for armor (e.g., Chest, Helm)
             # The Armor class now has a 'slot' attribute, so we can use that for validation/assignment
             if item_obj.slot == slot: # Ensure the item's intended slot matches the target slot
                 self.equipped_items[slot] = item_obj
-                print(f"Equipped {item_obj.name} to {self._get_slot_display_name(slot)}.")
+                if not silent:
+                    print(f"Equipped {item_obj.name} to {self._get_slot_display_name(slot)}.")
             else:
-                # Corrected this line to use _get_slot_display_name for both slot and item_obj.slot
-                print(f"Cannot equip {item_obj.name} to {self._get_slot_display_name(slot)}. It belongs in the {self._get_slot_display_name(item_obj.slot)} slot.")
+                if not silent:
+                    print(f"Cannot equip {item_obj.name} to {self._get_slot_display_name(slot)}. It belongs in the {self._get_slot_display_name(item_obj.slot)} slot.")
                 return # Exit if slot mismatch
         elif item_obj.itemType == ItemType.Item:
             # For general items (rings, cloaks, etc.), equip to the specified slot
             self.equipped_items[slot] = item_obj
-            print(f"Equipped {item_obj.name} to {self._get_slot_display_name(slot)}.")
+            if not silent:
+                print(f"Equipped {item_obj.name} to {self._get_slot_display_name(slot)}.")
         else:
-            print(f"Cannot equip {item_obj.name}. Unknown item type or invalid slot for this item.")
+            if not silent:
+                print(f"Cannot equip {item_obj.name}. Unknown item type or invalid slot for this item.")
             return # Exit if item type is not recognized for equipping
 
         self.update_attunement() # Update attunement after successful equip
 
 
-    def unequip_item(self, slot: Slots):
+    def unequip_item(self, slot: Slots, silent=False):
         """Unequips an item from a specific slot."""
         if self.equipped_items[slot] is not None:
             unequipped_item = self.equipped_items[slot]
             self.equipped_items[slot] = None
-            print(f"Unequipped {unequipped_item.name} from {self._get_slot_display_name(slot)}.") # Use helper function
+            if not silent:
+                print(f"Unequipped {unequipped_item.name} from {self._get_slot_display_name(slot)}.") # Use helper function
             self.update_attunement()
         else:
-            print(f"Nothing is equipped in {self._get_slot_display_name(slot)}.") # Use helper function
+            if not silent:
+                print(f"Nothing is equipped in {self._get_slot_display_name(slot)}.") # Use helper function
 
     def update_attunement(self):
         """Recalculates the number of attuned items."""
@@ -418,12 +427,12 @@ class Player:
                      "Wisdom": 0,
                      "Charisma": 0}
 
-        # Initial items and equipment
-        self.inventory.add_item(rock, 1)
-        self.inventory.add_item(tornRags, 1)
+        # Initial items and equipment (now with silent=True)
+        self.inventory.add_item(rock, 1, silent=True)
+        self.inventory.add_item(tornRags, 1, silent=True)
         # Equip initial items (using the inventory's equip method)
-        self.inventory.equip_item(rock, Slots.MainHand)
-        self.inventory.equip_item(tornRags, Slots.Chest)
+        self.inventory.equip_item(rock, Slots.MainHand, silent=True)
+        self.inventory.equip_item(tornRags, Slots.Chest, silent=True)
 
 
     def getModifier(self):
@@ -537,7 +546,7 @@ class Player:
 
     def current_stats(self):
         """Prints a display of the user's current statistics."""
-        print("Your current stats are:")
+        print(f'\nYour current stats are:')
         print(f'Hit Points: {self.currentHP}/{self.maxHP}')
         print(f'Strength: {self.stats["Strength"]} ({self.mods["Strength"]:+})')
         print(f'Dexterity: {self.stats["Dexterity"]} ({self.mods["Dexterity"]:+})')
@@ -606,9 +615,9 @@ class Player:
                 stats.append(str(val))
                 rolls = [] # Reset for next roll
 
-            print(f"Please assign a stat to a selected attribute by entering the number then the attribute.\n"
-                  f"For example, '10 strength' or '10 str' will assign 10 to your strength, if you have a 10 available.\n\n"
-                  f"Your rolled stats are:\n {', '.join(stats)}\n\n"
+            print(f"\nPlease assign a stat to a selected attribute by entering the number then the attribute.\n"
+                  f"For example: '10 strength' or '10 str' will assign 10 to your strength, if you have a 10 available.\n\n"
+                  f"Your rolled stats are:\n {', '.join(stats)}\n"
                   f"Your attributes are:\n {', '.join(attributes)}\n")
 
             current_attributes = list(attributes)
@@ -642,7 +651,7 @@ class Player:
                 else:
                     print("Error. Input was not recognised. Please try again with 'Number' + 'Attribute'.")
 
-            print(f"Your current stats are:\n"
+            print(f'\nYour current stats are:\n'
                   f'Strength: {self.stats["Strength"]}\n'
                   f'Dexterity: {self.stats["Dexterity"]}\n'
                   f'Constitution: {self.stats["Constitution"]}\n'
@@ -651,7 +660,7 @@ class Player:
                   f'Charisma: {self.stats["Charisma"]}\n')
 
             select = input("Are you happy with this selection? Y/N?\n"
-                           "WARNING: If you select 'N', your dice will be randomly rolled again. Proceed?\n"
+                           "    WARNING: If you select 'N', your dice will be randomly rolled again. Proceed?\n"
                            " >> ").lower()
             if select == "n":
                 continue # Loop back to re-roll and re-allocate

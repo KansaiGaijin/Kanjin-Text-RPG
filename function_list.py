@@ -13,11 +13,16 @@ def wait():
 
 def startGame():
     print("Welcome stranger, to the world of Kanjin!.")
-    start = input("Would you like to create your own character or use pre-generated stats?"
-                  "\n 1) Create a new character\n 2) Pre-generated\n >> ")
+    # Loop for initial choice: Create or Pre-generated
     while True:
+        start = input("Would you like to create your own character or use pre-generated stats?"
+                      "\n 1) Create a new character\n 2) Pre-generated\n >> ")
+
         if start in ("1", "Create"):
-            while True:  # Global check to see if Name, Age, and Gender are correct
+            # --- Character Basic Info (Name, Gender, Age) ---
+            name, gender, age = None, None, None # Initialize
+            # Loop until basic info is confirmed
+            while True:
                 # Name
                 name = input('What is your name?\n >> ').title()
                 while len(name) < 2:
@@ -25,7 +30,7 @@ def startGame():
                 # Gender
                 while True:
                     gender_select = input("What is your gender?\n"
-                                          "1) Male\n2) Female\n3) Other\n >> ")
+                                          "1) Male\n2) Female\n3) Other\n >> ").lower()
                     if gender_select not in ("male", "female", "other", "1", "2", "3"):
                         print("Sorry I didn't recognise that gender. Please try again.")
                         continue
@@ -46,26 +51,23 @@ def startGame():
                         print("Sorry I didn't recognise that age. Please type in a whole number.")
                         continue
                 # Double check responses
-                correct = input(f"Hello, {name}. You are a {age} year old {gender}.\nIs this correct? Y/N\n >> ")
-                if correct in ['y', 'yes']:
-                    break
-                elif correct in ['n', 'no']:
-                    continue
+                correct = input(f"Hello, {name}.\nYou are a {age} year old {gender.lower()}.\nIs this correct? Y/N\n >> ")
+                if correct.lower() in ['y', 'yes']:
+                    break # Exit basic info confirmation loop
+                elif correct.lower() in ['n', 'no']:
+                    continue # Restart basic info input
                 else:
-                    print("Sorry, I didn't catch that.\n")
-                    correct = input(f"You are a {age} year old {gender}. \nIs this correct? Y/N\n >> ")
-                    if correct in ['y', 'yes']:
-                        break
-                    elif correct in ['n', 'no']:
-                        continue
-                break
+                    print("Sorry, I didn't catch that. Please try again.\n")
+                    continue
 
+            # --- Race and Job Selection ---
             race = None
             job = None
-
-            while True:  # Global check to see if Race and Job are correct
-                # Race
+            # Loop until Race and Job are confirmed
+            while True:
+                # Race Selection
                 selected_race_obj = None
+                # Loop for selecting and viewing race
                 while True:
                     race_choice = input("Please select a race to learn more about it:\n"
                                         "1) Elf\n2) Dwarf\n3) Human\n >> ").title()
@@ -81,19 +83,23 @@ def startGame():
 
                     if selected_race_obj:
                         print(f"\n--- {selected_race_obj.name} ---")
-                        print(selected_race_obj.__repr__())  # Use the __repr__ to get full description and traits
+                        print(selected_race_obj.__repr__())
                     print('Would you like to proceed with this race or view another?')
                     proceed = input('1) Proceed\n2) View another race\n >> ')
-                    if proceed in ('1', 'proceed'):
-                        race = selected_race_obj
-                        break
-                    elif proceed in ('2', 'view', 'view another', 'view another race'):
-                        race = None
+                    if proceed.lower() in ('1', 'proceed'):
+                        race = selected_race_obj # Assign race object
+                        break # Exit race selection loop
+                    elif proceed.lower() in ('2', 'view', 'view another', 'view another race'):
+                        continue # Restart race selection
+                    else:
+                        print("Sorry, I didn't catch that. Please try again.\n")
                         continue
-                # Job
+
+                # Job Selection
                 selected_job_obj = None
+                # Loop for selecting and viewing job
                 while True:
-                    job_choice = input("Please select a race to learn more about it:\n"
+                    job_choice = input("Please select a job to learn more about it:\n"
                                         "1) Barbarian\n2) Cleric\n3) Wizard\n >> ").title()
                     if job_choice in ['Barbarian', '1']:
                         selected_job_obj = Barbarian
@@ -107,30 +113,35 @@ def startGame():
 
                     if selected_job_obj:
                         print(f"\n--- {selected_job_obj.name} ---")
-                        print(selected_job_obj.__repr__())  # Use the __repr__ to get full description and traits
+                        print(selected_job_obj.__repr__())
 
                     print('Would you like to proceed with this job or view another?')
                     proceed = input('1) Proceed\n2) View another job\n >> ')
-                    if proceed in ('1', 'proceed'):
-                        job = selected_job_obj  # Store the string name
-                        break
-                    elif proceed in ('2', 'view', 'view another', 'view another job'):
-                        job = None
-                        continue
+                    if proceed.lower() in ('1', 'proceed'):
+                        job = selected_job_obj # Assign job object
+                        break # Exit job selection loop
+                    elif proceed.lower() in ('2', 'view', 'view another', 'view another job'):
+                        continue # Restart job selection
                     else:
                         print("Sorry, I didn't catch that. Please try again.\n")
+                        continue
 
-                # Final check
+                # Final confirmation for both Race and Job
                 while True:
-                    correct = input(f"{name}, you are a {race.name_adjective} {job.name}.\nIs this correct? Y/N\n >> ")
-                    if correct in ['y', 'yes']:
+                    # This safeguard should ideally not be hit if inner loops work correctly
+                    if race is None or job is None:
+                        print("Error: Race or Job not selected. Restarting Race/Job selection.")
+                        break # Break out of this inner loop to restart the outer race/job loop
+                    correct = input(f"\n{name}, you are a {race.name_adjective} {job.name}.\nIs this correct? Y/N\n >> ")
+                    if correct.lower() in ['y', 'yes']:
+                        return name, gender, age, race, job # All confirmed, return values
+                    elif correct.lower() in ['n', 'no']:
+                        # If not correct, break this loop to re-enter race/job selection
                         break
-                    elif correct in ['n', 'no']:
-                        continue
                     else:
                         print("Sorry, I didn't catch that. Please try again.\n")
                         continue
-                return name, gender, age, race, job
+
         elif start in ("2", "pre-generated"):
             print("Please be prepared to enter a name, gender, age, race, and class, from those available in the game."
                   "\nIf you are unsure what the options are, please go back and create a new character.")
@@ -139,19 +150,40 @@ def startGame():
                 name = input("Name: ")
                 gender = input("Gender: ")
                 age = int(input("Age: "))
-                race = input("Race: ")
-                job = input("Job: ")
-                return name, gender, age, race, job  # Return and exit function
+                race_str = input("Race (Elf, Dwarf, Human): ")
+                job_str = input("Job (Barbarian, Cleric, Wizard): ")
+
+                # Map string inputs to actual Race/Job objects for consistency
+                race_map = {'elf': Elf, 'dwarf': Dwarf, 'human': Human}
+                job_map = {'barbarian': Barbarian, 'cleric': Cleric, 'wizard': Wizard}
+
+                actual_race = race_map.get(race_str.lower())
+                actual_job = job_map.get(job_str.lower())
+
+                if actual_race and actual_job:
+                    return name, gender, age, actual_race, actual_job
+                else:
+                    print("Invalid race or job entered for pre-generated character. Please try again.")
+                    # Force restart to character creation choice by setting 'start' to '1'
+                    # and then continue the outermost loop.
+                    start = "1"
+                    continue
             elif create in ("n", "no"):
-                # If 'n', continue the outer while True loop to re-prompt the initial choice.
+                # If 'n', re-prompt the initial choice.
+                start = input("Would you like to create your own character or use pre-generated stats?"
+                              "\n 1) Create a new character\n 2) Pre-generated\n >> ")
                 continue
             else:
                 print("Invalid input. Please enter Y or N.")
-                # If invalid, continue the outer while True loop to re-prompt the initial choice.
+                # If invalid, re-prompt the initial choice.
+                start = input("Would you like to create your own character or use pre-generated stats?"
+                              "\n 1) Create a new character\n 2) Pre-generated\n >> ")
                 continue
         else:
             print("Invalid input. Please select '1' or '2'.")
-            # Continue the outer while True loop to re-prompt the initial choice.
+            # Re-prompt the initial choice.
+            start = input("Would you like to create your own character or use pre-generated stats?"
+                          "\n 1) Create a new character\n 2) Pre-generated\n >> ")
             continue
 
 def query_equip(player: Player):
