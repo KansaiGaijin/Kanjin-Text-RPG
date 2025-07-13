@@ -15,7 +15,7 @@ class Engine:
     """
     def __init__(self):
         self.player = None  # Will be initialized after character creation
-        self.current_scene = starting_clearing # Start the game in the starting clearing
+        self.current_scene = tutorial # Start the game in the tutorial
         self.seed = self.current_scene.name # String representation of current scene name
 
     def set_player(self, player_obj):
@@ -38,7 +38,24 @@ class Engine:
                     print(f"  - {item_obj.name} (x{count})")
         # Display lootable containers
         if self.current_scene.lootable_items:
-            print("\nYou also notice some containers:")
+            print("\nYou also notice:")
+            for container_name, items_in_container in self.current_scene.lootable_items.items():
+                if any(count > 0 for count in items_in_container.values()): # Check if container has any items left
+                    print(f"  - {container_name.title()}")
+
+    def look_around(self):
+        if self.current_scene.exits:
+            exit_directions = ", ".join(self.current_scene.exits.keys()).title()
+            print(f"Exits: {exit_directions}")
+        # Display available items
+        if self.current_scene.available_items:
+            print("\nAround you, you see:")
+            for item_obj, count in self.current_scene.available_items.items():
+                if count > 0:
+                    print(f"  - {item_obj.name} (x{count})")
+        # Display lootable containers
+        if self.current_scene.lootable_items:
+            print("\nYou also notice:")
             for container_name, items_in_container in self.current_scene.lootable_items.items():
                 if any(count > 0 for count in items_in_container.values()): # Check if container has any items left
                     print(f"  - {container_name.title()}")
@@ -93,7 +110,7 @@ class Engine:
                     elif isinstance(item_obj, Armor):
                         print(f"AC: {item_obj.ac}")
                         print(f"Grade: {item_obj.grade}")
-                    print(f"Value: {item_obj.value if item_obj.value is not None else 'N/A'}")
+                    print(f"Value: {item_obj.value if item_obj.value is not None else 'No value'}")
                     print(f"Magical: {item_obj.magical}")
                     print(f"Attunement: {'Required' if item_obj.attunement else 'Not Required'}")
                     found_in_scene = True
@@ -201,7 +218,7 @@ class Engine:
                 try:
                     choice = input("What would you like to take? (number or 'take all'/'leave')\n>> ").lower()
                     if choice == "leave":
-                        print("You close the container.")
+                        print(f"You close the {container_name}.")
                         break
                     elif choice == "take all":
                         for item_obj, count in loot_options:
@@ -245,14 +262,27 @@ def main_game_loop():
     The main loop for the game, handling character creation and continuous gameplay.
     """
     # Character Creation
-    name, gender, age, race, job = startGame()
+    name, gender, age, race, job, pre_allocated_stats = startGame()
 
     # Create player instance
     player = Player(name, gender, age, race, job)
     game_engine.set_player(player) # Set the player in the game engine
 
     # Display initial character summary
-    player.new_char() # This calls allocation, which is interactive.
+    if pre_allocated_stats is None:
+        # For 'Create New Character' or 'Quick Set Up'
+        game_engine.player.new_char()
+    else:
+        # For 'Pre-generated Character'
+        game_engine.player.stats = pre_allocated_stats
+        game_engine.player.getModifier()
+        game_engine.player.set_stats_job()  # Still need to set HP based on job and Con modifier
+        game_engine.player.current_stats()  # Display stats after setting them
+        print(' ')
+        game_engine.player.inventory.current_equipment()
+        print(' ')
+        game_engine.player.inventory.current_inventory()
+        print(' ')
 
     print("\nYour adventure begins...")
     game_engine.display_current_scene() # Display the starting scene
@@ -266,10 +296,12 @@ def main_game_loop():
             get_instructions()
         elif command == "scene":
             game_engine.display_current_scene()
+        elif command == "look":
+            game_engine.look_around()
         elif command == "inventory":
             game_engine.player.inventory.current_inventory()
         elif command == "equipment":
-            Inventory.current_equipment() # This is a static method on Inventory class
+            game_engine.player.inventory.current_equipment()
         elif command == "stats":
             game_engine.player.current_stats()
         elif command == "hp":
