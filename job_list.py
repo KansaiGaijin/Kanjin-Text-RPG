@@ -13,8 +13,7 @@ class Job:
         for key, value in self.proficiency.items():
             profs = profs + f"{key.title()}: {', '.join(value).title()}" + "\n"
 
-        return f"{self.name}\n\n" \
-               f"{self.description}\n\n" \
+        return f"{self.description}\n\n" \
                f"{self.name}'s have the following traits:\n\n" \
                f"Hit Die\n" \
                f"1d{self.hitdie[1]}\n\n" \
@@ -119,7 +118,7 @@ class Wizard(Job):
     def __init__(self):
         name = "Wizard"
         description = "Clad in the silver robes that denote her station, an elf closes her eyes to shut out the " \
-                      " of the battlefield and begins her quiet chant. Fingers weaving in front of her, she\n" \
+                      " noise of the battlefield and begins her quiet chant. Fingers weaving in front of her, she\n" \
                       "completes her spell and launches a tiny bead of fire toward the enemy ranks, where it erupts " \
                       "into a conflagration that engulfs the soldiers.\n" \
                       "Checking and rechecking his work, a human scribes an intricate magic circle in chalk on the" \
