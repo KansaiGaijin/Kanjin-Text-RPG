@@ -93,9 +93,8 @@ class Scene:
 # Scene 0: Tutorial
 tutorial = Scene(
     name="Tutorial",
-    description="Welcome to Kanjin Text RPG!"
+    description="Welcome to Kanjin Text RPG!\n\n"
                 "This is a very simple tutorial to show you the basics of issuing commands.\n"
-                "You can return at anytime where you are asked 'What do you want to do?' by typing 'Enter tutorial'.\n"
                 "Important commands you'll want to know can be found by typing 'Help'.\n\n"
                 "These are the available commands:\n"
                 "Help - Prints this help message.\n"
@@ -153,6 +152,8 @@ dark_cave_entrance.add_available_item(polearm, 1) # A polearm leaning against th
 
 
 # Link the scenes together
+tutorial.add_exit("exit", starting_clearing)
+
 starting_clearing.add_exit("north", forest_path)
 starting_clearing.add_exit("east", dark_cave_entrance)
 
