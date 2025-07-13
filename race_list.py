@@ -27,7 +27,7 @@ class Race:
 class Elf(Race):
     def __init__(self):
         name = "Elf"
-        name_adjective = "Elves"
+        name_adjective = "Elven"
         description = "Elves are a magical people of otherworldly grace, living in the world but not entirely part\n" \
                       "of it. They live in places of ethereal beauty, in the midst of ancient forests or in silvery\n" \
                       "spires glittering with faerie light, where soft music drifts through the air\n" \
@@ -75,7 +75,7 @@ class Elf(Race):
 class Dwarf(Race):
     def __init__(self):
         name = "Dwarf"
-        name_adjective = "Dwarves"
+        name_adjective = "Dwarven"
         description = "Kingdoms rich in ancient grandeur, halls carved into the roots of\n" \
                       "mountains, the echoing of picks and hammers in deep mines and blazing\n" \
                       "forges, a commitment to clan and tradition, and a burning hatred of goblins and orcs—these\n" \
@@ -120,7 +120,7 @@ class Dwarf(Race):
 class Human(Race):
     def __init__(self):
         name = "Human"
-        name_adjective = "Humans"
+        name_adjective = "Human"
         description = "In the reckonings of most worlds, humans are the youngest of the common races, late to arrive " \
                       "on the world scene and short-lived in comparison to dwarves, elves, and dragons. Perhaps it\n" \
                       "is because of their shorter lives that they strive to achieve as much as they can in the " \
