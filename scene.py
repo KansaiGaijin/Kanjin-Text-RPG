@@ -109,7 +109,7 @@ tutorial = Scene(
                 "Enter cave | house | room - maybe... TBC\n"
                 "Scene or Location - Replays the current area's details\n"
                 "Look around - lists the available items in your scene without displaying the scene description.\n"
-                "Examine | Open | Loot *object* - Provides details of an item, opens a container, or takes an object.\n"
+                "Examine | Open | Loot *object* - Provides details of an item, opens a container, or takes an object."
 )
 tutorial.add_available_item(rock, 1)
 tutorial.add_available_item(paper, 2)
