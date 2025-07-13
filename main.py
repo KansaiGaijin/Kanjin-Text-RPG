@@ -2,7 +2,7 @@ import sys
 # Add the current directory to sys.path to allow imports from sibling files
 sys.path.append('.')
 from player import Player
-from function_list import startGame, parse, error_message, get_instructions
+from function_list import startGame, parse, error_message, get_instructions, wait
 from scene import *
 
 
@@ -194,13 +194,13 @@ class Engine:
                     return
 
                 print(f"You look inside the {container_name}. You see:")
-                loot_list = list(items_in_container.items())  # List of (item_obj, count) tuples
+                loot_list = list(items_in_container.items())
 
                 while True:
                     for i, (item_obj, count) in enumerate(loot_list, 1):
                         print(f"{i}) {item_obj.name} (x{count})")
 
-                    # Dynamically determine the numbers for "Take all" and "Leave"
+
                     take_all_option = len(loot_list) + 1
                     leave_option = len(loot_list) + 2
 
@@ -209,7 +209,7 @@ class Engine:
 
                     choice = input("What would you like to take? (number or 'take all'/'leave')\n>> ").lower().strip()
 
-                    # --- MODIFIED LOGIC START ---
+
                     if choice == "take all" or (choice.isdigit() and int(choice) == take_all_option):
                         for item_obj, count in list(items_in_container.items()):
                             self.player.inventory.add_item(item_obj, count)
@@ -220,7 +220,7 @@ class Engine:
                     elif choice == "leave" or (choice.isdigit() and int(choice) == leave_option):
                         print(f"You leave the {container_name} untouched.")
                         return
-                    else:  # Now this 'else' only deals with potential item selections
+                    else:
                         try:
                             selection_index = int(choice) - 1
                             if 0 <= selection_index < len(loot_list):
@@ -235,21 +235,21 @@ class Engine:
                                         take_count = int(take_count_input)
                                     except ValueError:
                                         print("Invalid amount. Please enter 'all' or a number.")
-                                        continue  # Go back to the main loot menu
+                                        continue
 
-                                if take_count > 0 and take_count <= current_count:
+                                if 0 < take_count <= current_count:
                                     self.player.inventory.add_item(item_obj, take_count)
                                     items_in_container[item_obj] -= take_count
                                     print(f"You took {take_count} {item_obj.name}.")
 
                                     if items_in_container[item_obj] <= 0:
                                         del items_in_container[item_obj]
-                                        loot_list = list(items_in_container.items())  # Rebuild loot_list
+                                        loot_list = list(items_in_container.items())
 
                                     if not items_in_container:
                                         print(f"The {container_name} is now empty.")
                                         return
-                                    elif not loot_list:  # This handles if all items were individually taken and loot_list becomes empty
+                                    elif not loot_list:
                                         print(f"The {container_name} is now empty.")
                                         return
                                 else:
@@ -258,9 +258,6 @@ class Engine:
                                 print("Invalid selection. Please choose a valid item number, 'take all', or 'leave'.")
                         except ValueError:
                             print("Invalid selection. Please enter a number, 'take all', or 'leave'.")
-                    # --- MODIFIED LOGIC END ---
-                # This return is unreachable if the while True loop has a return path for all conditions
-                # but it doesn't hurt as a safeguard if logic changes later.
                 return
 
         if not container_found:
@@ -297,6 +294,7 @@ def main_game_loop():
         game_engine.player.inventory.current_inventory()
         print(' ')
 
+    wait()
     print("\nYour adventure begins...")
     game_engine.display_current_scene() # Display the starting scene
 

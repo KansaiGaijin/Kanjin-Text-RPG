@@ -11,6 +11,89 @@ from job_list import Barbarian, Cleric, Wizard
 def wait():
     input("Press enter to continue...")
 
+pre_generated_characters = {
+    "1": {
+        "name": "Arion", # Example Name
+        "gender": "Male",
+        "age": 25,
+        "race": Elf,
+        "job": Wizard, # Based on the High Elf sheet
+        "alignment": "lawful good",
+        "description": "A scholarly High Elf skilled in the arcane arts.",
+        "stats": {
+            "Strength": 10, "Dexterity": 16, "Constitution": 12,
+            "Intelligence": 16, "Wisdom": 13, "Charisma": 8
+        },
+        "armor_class": "13 or 16 (mage armor)",
+        "hit_points": "7 (Hit Dice 1d6 + Con modifier)",
+        "speed": "30 ft.",
+        "proficiencies": {
+            "bonus": "+2",
+            "saving_throws": {"Int": "+5", "Wis": "+3"},
+            "advantage_on_saves": ["charmed"],
+            "skills": {"Arcana": "+5", "History": "+5", "Investigation": "+5", "Perception": "+3", "Persuasion": "+1"},
+            "armor": [], # None listed, just "None"
+            "weapons": ["Daggers", "darts", "slings", "quarterstaffs", "longswords", "shortswords", "shortbows", "longbows"],
+            "tools": []
+        }
+    },
+    "2": {
+        "name": "Brundle", # Example Name
+        "gender": "Female",
+        "age": 35,
+        "race": Human,
+        "job": Barbarian, # Based on the Human sheet
+        "alignment": "chaotic good",
+        "description": "A robust Human warrior, charging into battle.",
+        "stats": {
+            "Strength": 16, "Dexterity": 9, "Constitution": 15,
+            "Intelligence": 13, "Wisdom": 11, "Charisma": 14
+        },
+        "armor_class": "18",
+        "hit_points": "12 (Hit Dice 1d10 + Con modifier))",
+        "speed": "30 ft.",
+        "proficiencies": {
+            "bonus": "+2",
+            "saving_throws": {"Str": "+5", "Con": "+4"},
+            "skills": {"Athletics": "+5", "History": "+3", "Intimidation": "+4", "Perception": "+2"},
+            "armor": ["All", "shields"],
+            "weapons": ["Simple", "martial"],
+            "tools": ["Gaming dice", "vehicles (land)"],
+            "senses": {"Passive Perception": "12"},
+            "languages": ["Common", "Orc"]
+        }
+    },
+    "3": {
+        "name": "Drok", # Example Name
+        "gender": "Other",
+        "age": 75, # Dwarves live longer
+        "race": Dwarf,
+        "job": Cleric, # Based on the Hill Dwarf sheet (Life Domain implied by "healing" focus)
+        "alignment": "lawful good",
+        "description": "A stout Hill Dwarf cleric, a pillar of his community.",
+        "stats": {
+            "Strength": 14, "Dexterity": 8, "Constitution": 15,
+            "Intelligence": 10, "Wisdom": 16, "Charisma": 12
+        },
+        "armor_class": "18 (chain mail, shield)",
+        "hit_points": "10 (Hit Dice 1d8 + Con modifier))",
+        "speed": "25 ft.",
+        "proficiencies": {
+            "bonus": "+2",
+            "saving_throws": {"Wis": "+5", "Cha": "+3"},
+            "advantage_on_saves": ["poisoned"],
+            "skills": {"Insight": "+5", "Medicine": "+5", "Persuasion": "+3", "Religion": "+2"},
+            "armor": ["all armor", "shields"],
+            "weapons": ["battleaxe", "simple weapons", "warhammer"],
+            "tools": ["brewer's supplies", "jeweler's tools"],
+            "damage_resistances": ["poison"],
+            "senses": {"darkvision": "60 ft.", "passive_perception": "13"},
+            "languages": ["Common", "Dwarvish", "Giant"]
+        }
+    }
+}
+
+
 def startGame():
     print("Welcome stranger, to the world of Kanjin!.")
     # Loop for initial choice: Create or Pre-generated
@@ -165,39 +248,114 @@ def startGame():
                     print("Invalid race or job entered for pre-generated character. Please try again.")
                     start = "1"
                     continue
+                    return None
             elif create in ("n", "no"):
                 # If 'n', re-prompt the initial choice.
                 start = input("Would you like to create your own character or use pre-generated stats?"
                               "\n 1) Create a new character\n 2) Quick Setup\n 3) Pre-Gen Character\n >> ")
                 continue
+                return None
             else:
                 print("Invalid input. Please enter Y or N.")
                 # If invalid, re-prompt the initial choice.
                 start = input("Would you like to create your own character or use pre-generated stats?"
                               "\n 1) Create a new character\n 2) Quick Setup\n 3) Pre-Gen Character\n >> ")
                 continue
+                return None
         elif start in ("3", "Pre-generated Character"):
-            print("You have chosen a pre-generated character.")
-            # Define pre-generated character details
-            name = "Elias"
-            gender = "Male"
-            age = 30
-            race = Human  # Direct reference to the object
-            job = Barbarian  # Direct reference to the object
-            pre_allocated_stats = {
-                "Strength": 15,
-                "Dexterity": 14,
-                "Constitution": 13,
-                "Intelligence": 12,
-                "Wisdom": 10,
-                "Charisma": 8
-            }
-            print(f"\nPre-generated Character: {name}, a {age} year old {race.name_adjective} {job.name}.")
-            return name, gender, age, race, job, pre_allocated_stats
+            while True:
+                print("Who would you like to to play?")
+                for key, char_data in pre_generated_characters.items():
+                    print(
+                        f"{key}) {char_data['name']} ({char_data['race'].name_adjective} {char_data['job'].name}, {char_data['alignment']})")
+                print("Type 'back' to return to character creation options.")
 
-        else:
-            print("Invalid input. Please select '1', '2', or '3'.\n.")
+                char_choice = input(">> ").strip().lower()
+
+                if char_choice == "back":
+                    break
+
+                if char_choice in pre_generated_characters:
+                    selected_char_data = pre_generated_characters[char_choice]
+
+                    # --- Display Character Details for Confirmation ---
+                    print(f"\n--- {selected_char_data['name']}'s Details ---")
+                    print(f"Name: {selected_char_data['name']}")
+                    print(f"Gender: {selected_char_data['gender']}")
+                    print(f"Age: {selected_char_data['age']}")
+                    print(f"Race: {selected_char_data['race'].name_adjective}")
+                    print(f"Class: {selected_char_data['job'].name}")
+                    print(f"Alignment: {selected_char_data['alignment']}")
+                    print(f"Description: {selected_char_data['description']}")
+                    print(f"Age: {selected_char_data['age']}")
+                    print(f"\nArmor Class: {selected_char_data['armor_class']}")
+                    print(f"Hit Points: {selected_char_data['hit_points']}")
+                    print(f"Speed: {selected_char_data['speed']}")
+
+                    print("\n--- Stats ---")
+                    for stat_name, value in selected_char_data['stats'].items():
+                        # Calculate modifier for display (assuming standard D&D rules)
+                        modifier = (value - 10) // 2
+                        modifier_sign = "+" if modifier >= 0 else ""
+                        print(f"{stat_name}: {value} ({modifier_sign}{modifier})")
+
+                    print("\n--- Proficiencies & Abilities ---")
+                    print(f"Proficiency Bonus: {selected_char_data['proficiencies']['bonus']}")
+                    print(
+                        f"Saving Throws: {', '.join([f'{stat} {val}' for stat, val in selected_char_data['proficiencies']['saving_throws'].items()])}")
+                    if selected_char_data['proficiencies'].get('advantage_on_saves'):
+                        print(
+                            f"  Advantage on saves against: {', '.join(selected_char_data['proficiencies']['advantage_on_saves'])}")
+                    print(
+                        f"Skills: {', '.join([f'{skill} {val}' for skill, val in selected_char_data['proficiencies']['skills'].items()])}")
+                    if selected_char_data['proficiencies'].get('armor'):
+                        print(f"Armor Proficiencies: {', '.join(selected_char_data['proficiencies']['armor'])}")
+                    if selected_char_data['proficiencies'].get('weapons'):
+                        print(f"Weapon Proficiencies: {', '.join(selected_char_data['proficiencies']['weapons'])}")
+                    if selected_char_data['proficiencies'].get('tools'):
+                        print(f"Tool Proficiencies: {', '.join(selected_char_data['proficiencies']['tools'])}")
+                    if selected_char_data['proficiencies'].get('damage_resistances'):
+                        print(
+                            f"Damage Resistances: {', '.join(selected_char_data['proficiencies']['damage_resistances'])}")
+                    if selected_char_data['proficiencies'].get('senses'):
+                        senses_str = []
+                        if 'darkvision' in selected_char_data['proficiencies']['senses']:
+                            senses_str.append(
+                                f"Darkvision {selected_char_data['proficiencies']['senses']['darkvision']}")
+                        if 'passive_perception' in selected_char_data['proficiencies']['senses']:
+                            senses_str.append(
+                                f"Passive Perception {selected_char_data['proficiencies']['senses']['passive_perception']}")
+                        print(f"Senses: {', '.join(senses_str)}")
+                    if selected_char_data['proficiencies'].get('languages'):
+                        print(f"Languages: {', '.join(selected_char_data['proficiencies']['languages'])}")
+
+                    while True:
+                        print("\nDo you want to select this character?")
+                        print("1) Yes, select this character")
+                        print("2) No, go back to character selection")
+                        confirm_choice = input(">> ").strip().lower()
+
+                        if confirm_choice in ("1", "yes"):
+                            name = selected_char_data['name']
+                            gender = selected_char_data['gender']
+                            age = selected_char_data['age']
+                            race = selected_char_data['race']
+                            job = selected_char_data['job']
+                            pre_allocated_stats = selected_char_data['stats']
+
+                            print(f"\nYou have selected: {name}, a {age} year old {race.name_adjective} {job.name}.")
+                            return name, gender, age, race, job, pre_allocated_stats  # Exit all loops and function
+
+                        elif confirm_choice in ("2", "no"):
+                            print("\nReturning to pre-generated character selection.")
+                            break  # Break out of confirmation loop, go back to char_choice loop
+                        else:
+                            print("Invalid choice. Please enter '1', '2', 'yes', or 'no'.")
+
+                else:
+                    print("Invalid selection. Please choose a number from the list or 'back'.")
             continue
+
 
 def query_equip(player: Player):
     """Allows the player to view or change equipped items."""
