@@ -363,9 +363,18 @@ def get_instructions():
     descrip1 = ("There are certain commands that will be available almost anytime you are able to type\n"
                 "such as viewing your inventory, checking your equipped items, and also changing them.\n"
                 "You can also view your stats including your current and max hp.\n")
-    descrip2 = ("Some examples are: 'Check inventory', 'Check equipment', and 'View stats'.\n"
-                "To travel to a new area, just type 'Go north' or 'Enter cave' etc.\n"
-                "To replay the description of the current area, type 'Location', or 'Scene'.")
+    descrip2 = ("Help - Prints this help message.\n"
+                "Check inventory | bag | backpack - Lists items you are carrying.\n"
+                "    Can also just enter 'inventory | bag | backpack\n" 
+                "Check equipment | equipped | items - Lists items you have equipped\n"
+                "    Can also just enter 'equipment | equipped | items\n" 
+                "Check stats or Check hitpoints | hp | health - Shows your stat block or current health details\n"
+                "    Can also just enter 'stats | health | hitpoints | hp\n" 
+                "Go *direction* - Each scene will give you available directions i.e North\n"
+                "Enter cave | house | room - maybe... TBC\n"
+                "Scene or Location - Replays the current area's details\n"
+                "Look around - lists the available items in your scene without displaying the scene description.\n"
+                "Examine | Open | Loot *object* - Provides details of an item, opens a container, or takes an object.")
     print(descrip1)
     time.sleep(3) # Reduced sleep for faster testing
     print(descrip2)
@@ -398,7 +407,7 @@ def parse(input_text):
         elif words[0] == "check" and words[1] in ("hp", "hitpoints", "health"):
             command = "hp"
             return command, object1
-        elif words[0] in ("go", "enter"):
+        elif words[0] in ("go", "enter", "exit"):
             command = "go"
             object1 = " ".join(words[1:]) # The rest of the words are the direction
             return command, object1
@@ -408,6 +417,10 @@ def parse(input_text):
             return command, object1
         elif words[0] == "look" and words[1] == "around" and len(words) == 2:
             command = "look_around"
+            return command, object1
+        elif words[0] == "exit" and words[1] == "tutorial" and len(words) == 2:
+            command = "go"
+            object1 = " ".join(words[1:])
             return command, object1
 
     # Single-word commands
