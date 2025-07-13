@@ -39,7 +39,7 @@ class Slots(Enum):
     OffHand = auto()
     TwoHanded = auto()
     Helm = auto()
-    Chest = auto()
+    Armor = auto()
     Wrists = auto()
     Feet = auto()
     Neck = auto()
