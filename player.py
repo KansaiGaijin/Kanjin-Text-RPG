@@ -1,5 +1,5 @@
 from random import randint
-from enum_list import DamageType, DamageMod, ItemType, Slots # Import specific enums
+from enum_list import DamageType, DamageMod, ItemType, Slots
 
 # Define Item classes here, as they are fundamental building blocks
 class Item:
@@ -14,6 +14,7 @@ class Item:
 
     def __repr__(self):
         return f"{self.name}\n=====\n{self.description}\nValue: {self.value}\n"
+
 
 class Money(Item):
     """The currency item used in the world of Kanjin"""
@@ -30,14 +31,17 @@ class Money(Item):
                          itemType=ItemType.Money,
                          attunement=False)
 
+
 class Weapon(Item):
     """The base class for all weapons"""
-    def __init__(self, name, description, value, slot, damage1H, damage2H, versatiledmg,
+    def __init__(self, name, description, value, slot, damage1H, damage2H, versatiledmg, light, finesse,
                  dmgType, dmgMod, versatile, thrown, ItemType, magical, attunement):
         self.slot = slot
         self.damage1H = damage1H
         self.damage2H = damage2H
         self.versatiledmg = versatiledmg
+        self.light = light
+        self.finesse = finesse
         self.dmgType = dmgType
         self.dmgMod = dmgMod
         self.versatile = versatile
@@ -76,6 +80,7 @@ class Weapon(Item):
                    f"Value: {self.value}\n" \
                    f"Magical: {self.magical}\n" \
                    f"Attunement: {'Required' if self.attunement else 'Not Required'}"
+
 
 class Armor(Item):
     """The base class for all armor"""
@@ -116,7 +121,7 @@ class Inventory:
             Slots.OffHand: None,
             Slots.TwoHanded: None,
             Slots.Helm: None,
-            Slots.Chest: None,
+            Slots.Armor: None,
             Slots.Wrists: None,
             Slots.Feet: None,
             Slots.Neck: None,
@@ -310,26 +315,30 @@ rock = Weapon(
     damage1H='1d6',
     damage2H=None,
     versatiledmg=None,
+    light=True,
+    finesse=False,
     dmgType=DamageType.Bludgeoning,
     dmgMod=DamageMod.Strength,
     versatile=False,
     thrown=True,
     magical=False,
     ItemType=ItemType.Weapon,
-    attunement=False # Rocks typically aren't attuned
+    attunement=False
 )
 
 dagger = Weapon(
     name="Dagger",
     description="Pointy stabby-stab",
     value=None,
-    slot=Slots.MainHand, # Can be main hand or off hand
-    damage1H='1d4', # Daggers are usually 1d4
+    slot=Slots.MainHand,
+    damage1H='1d4',
     damage2H=None,
-    versatiledmg=None, # Daggers are not versatile in the D&D sense (they are light, finesse)
-    dmgType=DamageType.Piercing, # Changed to piercing
+    versatiledmg=None,
+    light=True,
+    finesse=True,
+    dmgType=DamageType.Piercing,
     dmgMod=DamageMod.Dexterity,
-    versatile=False, # Changed to False, as D&D versatile means 1H or 2H damage
+    versatile=False,
     thrown=True,
     magical=False,
     ItemType=ItemType.Weapon,
@@ -344,6 +353,8 @@ polearm = Weapon(
     damage1H=None,
     damage2H="1d10", # Polearms are typically 1d10
     versatiledmg=None,
+    light=False,
+    finesse=False,
     dmgType=DamageType.Piercing,
     dmgMod=DamageMod.Strength,
     versatile=False,
@@ -357,7 +368,7 @@ tornRags = Armor(
     name="Torn Rags",
     description="A ripped and worn-out outfit.",
     value=None,
-    slot=Slots.Chest,
+    slot=Slots.Armor,
     grade="Light",
     ac=10, # Base AC for light armor without proficiency is 10 + Dex mod
     disadvantage=False, # Light armor usually doesn't give disadvantage
@@ -430,9 +441,10 @@ class Player:
         # Initial items and equipment (now with silent=True)
         self.inventory.add_item(rock, 1, silent=True)
         self.inventory.add_item(tornRags, 1, silent=True)
+
         # Equip initial items (using the inventory's equip method)
         self.inventory.equip_item(rock, Slots.MainHand, silent=True)
-        self.inventory.equip_item(tornRags, Slots.Chest, silent=True)
+        self.inventory.equip_item(tornRags, Slots.Armor, silent=True)
 
 
     def getModifier(self):
